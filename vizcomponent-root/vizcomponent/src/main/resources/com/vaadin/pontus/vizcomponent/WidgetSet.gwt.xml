@@ -1,0 +1,12 @@
+<module>
+
+	<!-- WS Compiler: manually edited -->
+
+	<!-- Inherit DefaultWidgetSet -->
+	<inherits name="com.vaadin.DefaultWidgetSet" /> 
+	<inherits name="org.vectomatic.libgwtsvg"/>
+
+	<!-- Widget styles in public -directory -->
+	<stylesheet src="vizcomponent/styles.css"/>
+
+</module>
