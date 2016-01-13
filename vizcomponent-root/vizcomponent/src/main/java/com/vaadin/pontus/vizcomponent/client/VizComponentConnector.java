@@ -1,7 +1,6 @@
 package com.vaadin.pontus.vizcomponent.client;
 
-import java.util.logging.Logger;
-
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -63,19 +62,25 @@ public class VizComponentConnector extends AbstractComponentConnector {
     class NodeClickHandler implements ClickHandler {
         @Override
         public void onClick(ClickEvent event) {
-            Logger.getLogger("VizComponentConnector").info("Clicked");
             Element e = Element.as(event.getNativeEvent().getEventTarget());
             String nodeId = getWidget().getNodeId(e.getParentElement());
 
-            Logger.getLogger("VizComponentConnector").info("Clicked 2");
             MouseEventDetails details = MouseEventDetailsBuilder
                     .buildMouseEventDetails(event.getNativeEvent(), getWidget()
                             .getElement());
             rpc.nodeClicked(nodeId, details);
-            Logger.getLogger("VizComponentConnector").info("Clicked 3");
+
+            // Nop to trigger $entry in order to schedule the rpc.
+            // This is needed due to bug in gwt.svg.lib where $entry isn't
+            // called correctly
+            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+
+                @Override
+                public void execute() {
+                }
+            });
             event.stopPropagation();
             event.preventDefault();
-            Logger.getLogger("VizComponentConnector").info("Clicked 4");
         }
     }
 
@@ -88,6 +93,15 @@ public class VizComponentConnector extends AbstractComponentConnector {
                     .buildMouseEventDetails(event.getNativeEvent(), getWidget()
                             .getElement());
             rpc.edgeClicked(edgeId, details);
+
+            // Same as in NodeClickHandler
+            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+
+                @Override
+                public void execute() {
+                }
+            });
+
             event.stopPropagation();
             event.preventDefault();
         }

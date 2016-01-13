@@ -158,10 +158,11 @@ public class VizComponentWidget extends FlowPanel {
         }
     }
 
-    private static native String compileSVG(String graph)/*-{
-                                                         var result = $wnd.Viz(graph, { format: "svg" });
-                                                         return result;
-                                                         }-*/;
+    private static native String compileSVG(String graph)
+    /*-{
+          var result = $wnd.Viz(graph, { format: "svg" });
+          return result;
+        }-*/;
 
     public void addNodeClickHandler(ClickHandler handler) {
         if (svg == null) {

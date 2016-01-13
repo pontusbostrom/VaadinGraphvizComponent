@@ -29,7 +29,7 @@ public class UMLDemoView extends VerticalLayout {
 
         graphName = "\"Class diagram\"";
         Label label = new Label(
-                "This example show an (simplified) UML diagram of (a tiny part) of the Vaadin framework."
+                "This example show an (simplified) UML diagram of a (tiny) part of the Vaadin framework. "
                         + "Nodes with HTML content is used for the classes. "
                         + "When a class is clicked more detailed (here dummy) information is shown at the right of the diagram");
 
