@@ -5,8 +5,8 @@
 	<groupId>com.vaadin.pontus</groupId>
 	<artifactId>vizcomponent</artifactId>
 	<packaging>jar</packaging>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>MyComponent Add-on</name>
+	<version>0.1</version>
+	<name>VizComponent Add-on</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

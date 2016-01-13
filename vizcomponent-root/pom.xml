@@ -5,8 +5,8 @@
 	<groupId>com.vaadin.pontus</groupId>
 	<artifactId>vizcomponent-root</artifactId>
 	<packaging>pom</packaging>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>MyComponent Add-on Root Project</name>
+	<version>0.1</version>
+	<name>VizComponent Add-on Root Project</name>
 
 	<modules>
 		<module>vizcomponent</module>
