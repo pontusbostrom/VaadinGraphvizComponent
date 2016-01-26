@@ -17,6 +17,22 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
 
+/**
+ * This component is used to visualize the graphs represented by
+ * {@link com.vaadin.pontus.vizcomponent.model.Graph Graph}. It contains a
+ * method for rendering graphs and then for registering ClickListeners for nodes
+ * and edges in the shown graph. The internal interfaces
+ * {@link VizComponent.NodeClickListener NodeClickListener} and
+ * {@link VizComponent.EdgeClickListener EdgeClickListener} should be
+ * implemented by event handlers. The style of the rendered graph can be
+ * modified by methods to set css properties for nodes and edges. Note that the
+ * graph must be rendered before these methods are called. Otherwise they will
+ * have no effect. Re-rendering the graph will remove all css effects. Note that
+ * resizing the graphs does not re-render it.
+ *
+ * @author Pontus Boström
+ *
+ */
 @SuppressWarnings("serial")
 public class VizComponent extends com.vaadin.ui.AbstractComponent {
 
@@ -36,6 +52,12 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
         public void edgeClicked(EdgeClickEvent e);
     }
 
+    /**
+     * Base class for Click Events
+     *
+     * @author Pontus Boström
+     *
+     */
     public static class ClickEvent extends Component.Event {
 
         private final MouseEventDetails details;
@@ -56,6 +78,12 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
         }
     }
 
+    /**
+     * Events emitted when nodes are clicked.
+     *
+     * @author Pontus Boström
+     *
+     */
     public static class NodeClickEvent extends ClickEvent {
         private final Graph.Node node;
 
@@ -75,6 +103,12 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
         }
     }
 
+    /**
+     * Events emitted when edges are clicked.
+     *
+     * @author Pontus Boström
+     *
+     */
     public static class EdgeClickEvent extends ClickEvent {
         private final Graph.Edge edge;
 
@@ -119,6 +153,9 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
 
     private Graph graph;
 
+    /**
+     * The constructor creates an empty component
+     */
     public VizComponent() {
 
         graph = null;
@@ -129,8 +166,23 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
 
     }
 
+    /**
+     * This method renders and displays the graph given as the argument
+     *
+     * @param graph
+     *            if null then the component is emptied
+     */
     public void drawGraph(Graph graph) {
+
         this.graph = graph;
+        if (graph == null) {
+            getState().name = null;
+            getState().params = null;
+            getState().nodeParams = null;
+            getState().edgeParams = null;
+            getState().graph = null;
+            return;
+        }
         getState().graphType = graph.getType();
         getState().name = null;// Trigger stateChange event for sure. Works?
                                // Needed?
@@ -214,21 +266,53 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
                 EdgeClickListener.CLICK_HANDLER);
     }
 
+    /**
+     * Adds a css property with the given value to the node. The property will
+     * be applied to the polygon or ellipse that makes up the node. Note that
+     * the graph must be rendered before this method has any effect.
+     *
+     * @param node
+     * @param property
+     * @param value
+     */
     public void addCss(Graph.Node node, String property, String value) {
         getRpcProxy(VizComponentClientRpc.class).addNodeCss(node.getId(),
                 property, value);
     }
 
+    /**
+     * Adds a css property with the given value to the node text. Note that the
+     * graph must be rendered before this method has any effect.
+     *
+     * @param node
+     * @param property
+     * @param value
+     */
     public void addTextCss(Graph.Node node, String property, String value) {
         getRpcProxy(VizComponentClientRpc.class).addNodeTextCss(node.getId(),
                 property, value);
     }
 
+    /**
+     * The same as for addCss for nodes, but this applies to edge heads and
+     * tails as well as paths.
+     *
+     * @param edge
+     * @param property
+     * @param value
+     */
     public void addCss(Graph.Edge edge, String property, String value) {
         getRpcProxy(VizComponentClientRpc.class).addEdgeCss(edge.getId(),
                 property, value);
     }
 
+    /**
+     * The same as for addTextCss for nodes, but this applies to the edge label.
+     *
+     * @param edge
+     * @param property
+     * @param value
+     */
     public void addTextCss(Graph.Edge edge, String property, String value) {
         getRpcProxy(VizComponentClientRpc.class).addEdgeTextCss(edge.getId(),
                 property, value);

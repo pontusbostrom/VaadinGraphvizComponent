@@ -1,9 +1,7 @@
 package com.vaadin.pontus.vizcomponent.client;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.dom.client.NativeEvent;
 import com.vaadin.client.MouseEventDetailsBuilder;
 import com.vaadin.client.communication.RpcProxy;
 import com.vaadin.client.communication.StateChangeEvent;
@@ -59,48 +57,29 @@ public class VizComponentConnector extends AbstractComponentConnector {
 
     }
 
-    class NodeClickHandler implements ClickHandler {
+    class NodeClickHandler implements VizClickHandler {
         @Override
-        public void onClick(ClickEvent event) {
-            Element e = Element.as(event.getNativeEvent().getEventTarget());
+        public void onClick(NativeEvent event) {
+            Element e = Element.as(event.getEventTarget());
             String nodeId = getWidget().getNodeId(e.getParentElement());
 
             MouseEventDetails details = MouseEventDetailsBuilder
-                    .buildMouseEventDetails(event.getNativeEvent(), getWidget()
-                            .getElement());
+                    .buildMouseEventDetails(event, getWidget().getElement());
             rpc.nodeClicked(nodeId, details);
 
-            // Nop to trigger $entry in order to schedule the rpc.
-            // This is needed due to bug in gwt.svg.lib where $entry isn't
-            // called correctly
-            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-
-                @Override
-                public void execute() {
-                }
-            });
             event.stopPropagation();
             event.preventDefault();
         }
     }
 
-    class EdgeClickHandler implements ClickHandler {
+    class EdgeClickHandler implements VizClickHandler {
         @Override
-        public void onClick(ClickEvent event) {
-            Element e = Element.as(event.getNativeEvent().getEventTarget());
+        public void onClick(NativeEvent event) {
+            Element e = Element.as(event.getEventTarget());
             String edgeId = getWidget().getEdgeId(e.getParentElement());
             MouseEventDetails details = MouseEventDetailsBuilder
-                    .buildMouseEventDetails(event.getNativeEvent(), getWidget()
-                            .getElement());
+                    .buildMouseEventDetails(event, getWidget().getElement());
             rpc.edgeClicked(edgeId, details);
-
-            // Same as in NodeClickHandler
-            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-
-                @Override
-                public void execute() {
-                }
-            });
 
             event.stopPropagation();
             event.preventDefault();

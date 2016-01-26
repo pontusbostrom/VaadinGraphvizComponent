@@ -3,23 +3,32 @@ package com.vaadin.pontus.vizcomponent.client;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-
-import org.vectomatic.dom.svg.OMElement;
-import org.vectomatic.dom.svg.OMNodeList;
-import org.vectomatic.dom.svg.OMSVGLength;
-import org.vectomatic.dom.svg.OMSVGSVGElement;
-import org.vectomatic.dom.svg.utils.OMSVGParser;
+import java.util.Set;
 
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
 
+/**
+ * Widget to display a graph represented by
+ * {@link com.vaadin.pontus.vizcomponent.client.VizComponentState
+ * VizComponentState}
+ *
+ * The graph is rendered into an SVG element. When the graph has been rendered,
+ * event handlers can be added to nodes and edges, and nodes and edges can be
+ * styled using CSS.
+ *
+ * @author Pontus Boström
+ *
+ */
 public class VizComponentWidget extends FlowPanel {
 
-    private OMSVGSVGElement svg;
+    private Element svg;
     private HashMap<String, String> svgIdToNodeIdMap;
     private HashMap<String, String> svgIdToEdgeIdMap;
     private HashMap<String, String> nodeIdToSvgIdMap;
@@ -39,7 +48,7 @@ public class VizComponentWidget extends FlowPanel {
     public void renderGraph(VizComponentState graph) {
         ArrayList<Edge> connections = graph.graph;
         if (svg != null) {
-            getElement().removeChild(svg.getElement());
+            getElement().removeChild(svg);
             svg = null;
         }
         if (connections == null || connections.isEmpty()) {
@@ -117,10 +126,8 @@ public class VizComponentWidget extends FlowPanel {
 
         try {
             String result = compileSVG(builder.toString());
-            svg = OMSVGParser.parse(result);
-            svg.setWidth(OMSVGLength.SVG_LENGTHTYPE_PX, getOffsetWidth());
-            svg.setHeight(OMSVGLength.SVG_LENGTHTYPE_PX, getOffsetHeight());
-            getElement().appendChild(svg.getElement());
+            getElement().setInnerHTML(result);
+            svg = getElement().getFirstChildElement();
 
         } catch (JavaScriptException e) {
             String result = e.getDescription();
@@ -164,24 +171,33 @@ public class VizComponentWidget extends FlowPanel {
           return result;
         }-*/;
 
-    public void addNodeClickHandler(ClickHandler handler) {
+    public void addNodeClickHandler(final VizClickHandler handler) {
         if (svg == null) {
             return;
         }
-        for (String nodeId : svgIdToNodeIdMap.keySet()) {
-            OMElement svgNode = svg.getElementById(nodeId);
-            svgNode.addDomHandler(handler, ClickEvent.getType());
+        addClickHandler(svgIdToNodeIdMap.keySet(), handler);
+    }
+
+    private void addClickHandler(Set<String> ids, final VizClickHandler handler) {
+        for (String nodeId : ids) {
+            Element svgNode = DOM.getElementById(nodeId);
+            Event.sinkEvents(svgNode, Event.ONCLICK);
+            Event.setEventListener(svgNode, new EventListener() {
+
+                @Override
+                public void onBrowserEvent(Event event) {
+                    handler.onClick(event);
+                }
+
+            });
         }
     }
 
-    public void addEdgeClickHandler(ClickHandler handler) {
+    public void addEdgeClickHandler(final VizClickHandler handler) {
         if (svg == null) {
             return;
         }
-        for (String edgeId : svgIdToEdgeIdMap.keySet()) {
-            OMElement svgNode = svg.getElementById(edgeId);
-            svgNode.addDomHandler(handler, ClickEvent.getType());
-        }
+        addClickHandler(svgIdToEdgeIdMap.keySet(), handler);
     }
 
     public String getNodeId(Element e) {
@@ -199,23 +215,24 @@ public class VizComponentWidget extends FlowPanel {
             // Style the polygon or ellipse that make up the node
             // In case some other shape then nothing happens
             String id = nodeIdToSvgIdMap.get(nodeId);
-            OMElement svgNode = svg.getElementById(id);
+            Element svgNode = DOM.getElementById(id);
             applyCssToElement(svgNode, property, value);
         }
     }
 
-    private void applyCssToElement(OMElement svgNode, String property,
+    private void applyCssToElement(Element svgNode, String property,
             String value) {
-        OMNodeList<OMElement> children = svgNode
-                .getElementsByTagName("polygon");
+        NodeList<Element> children = svgNode.getElementsByTagName("polygon");
         if (children.getLength() > 0) {
-            for (OMElement child : children) {
-                child.getElement().getStyle().setProperty(property, value);
+            for (int i = 0; i < children.getLength(); i++) {
+                Element child = children.getItem(i);
+                child.getStyle().setProperty(property, value);
             }
         } else {
             children = svgNode.getElementsByTagName("ellipse");
-            for (OMElement child : children) {
-                child.getElement().getStyle().setProperty(property, value);
+            for (int i = 0; i < children.getLength(); i++) {
+                Element child = children.getItem(i);
+                child.getStyle().setProperty(property, value);
             }
         }
     }
@@ -224,7 +241,7 @@ public class VizComponentWidget extends FlowPanel {
         if (svg != null) {
             // Style the text in node
             String id = nodeIdToSvgIdMap.get(nodeId);
-            OMElement svgNode = svg.getElementById(id);
+            Element svgNode = DOM.getElementById(id);
             applyTextCssToElement(svgNode, property, value);
         }
     }
@@ -233,16 +250,17 @@ public class VizComponentWidget extends FlowPanel {
         if (svg != null) {
             // Style the text in node
             String id = edgeIdToSvgIdMap.get(edgeId);
-            OMElement svgNode = svg.getElementById(id);
+            Element svgNode = DOM.getElementById(id);
             applyTextCssToElement(svgNode, property, value);
         }
     }
 
-    private void applyTextCssToElement(OMElement svgNode, String property,
+    private void applyTextCssToElement(Element svgNode, String property,
             String value) {
-        OMNodeList<OMElement> children = svgNode.getElementsByTagName("text");
-        for (OMElement child : children) {
-            child.getElement().getStyle().setProperty(property, value);
+        NodeList<Element> children = svgNode.getElementsByTagName("text");
+        for (int i = 0; i < children.getLength(); i++) {
+            Element child = children.getItem(i);
+            child.getStyle().setProperty(property, value);
         }
     }
 
@@ -250,13 +268,13 @@ public class VizComponentWidget extends FlowPanel {
         if (svg != null) {
             // Style the path and polygon that make up the node
             String id = edgeIdToSvgIdMap.get(edgeId);
-            OMElement svgNode = svg.getElementById(id);
+            Element svgNode = DOM.getElementById(id);
             applyCssToElement(svgNode, property, value);
 
-            OMNodeList<OMElement> children = svgNode
-                    .getElementsByTagName("path");
-            for (OMElement child : children) {
-                child.getElement().getStyle().setProperty(property, value);
+            NodeList<Element> children = svgNode.getElementsByTagName("path");
+            for (int i = 0; i < children.getLength(); i++) {
+                Element child = children.getItem(i);
+                child.getStyle().setProperty(property, value);
             }
 
         }
@@ -266,8 +284,8 @@ public class VizComponentWidget extends FlowPanel {
         if (svg == null) {
             return;
         }
-        svg.setWidth(OMSVGLength.SVG_LENGTHTYPE_PX, getOffsetWidth());
-        svg.setHeight(OMSVGLength.SVG_LENGTHTYPE_PX, getOffsetHeight());
+        svg.setAttribute("width", getOffsetWidth() + "px");
+        svg.setAttribute("height", getOffsetHeight() + "px");
     }
 
 }
