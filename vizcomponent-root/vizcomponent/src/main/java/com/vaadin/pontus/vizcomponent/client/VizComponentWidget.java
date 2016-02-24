@@ -34,6 +34,9 @@ public class VizComponentWidget extends FlowPanel {
     private HashMap<String, String> nodeIdToSvgIdMap;
     private HashMap<String, String> edgeIdToSvgIdMap;
 
+    static int globalComponentID = 1;
+    private final int componentID;
+    
     public VizComponentWidget() {
 
         // CSS class-name should not be v- prefixed
@@ -42,6 +45,7 @@ public class VizComponentWidget extends FlowPanel {
         svgIdToEdgeIdMap = new HashMap<String, String>();
         nodeIdToSvgIdMap = new HashMap<String, String>();
         edgeIdToSvgIdMap = new HashMap<String, String>();
+        componentID = globalComponentID++;
 
     }
 
@@ -100,7 +104,7 @@ public class VizComponentWidget extends FlowPanel {
                 svgIdToNodeIdMap.put(svgNodeId, source.getId());
                 nodeIdToSvgIdMap.put(source.getId(), svgNodeId);
                 HashMap<String, String> params = source.getParams();
-                params.put("id", svgNodeId);
+                params.put("id", svgNodeId); //Use this ID for GraphViz also
                 builder.append(source.getId());
                 writeParameters(params, builder);
                 builder.append(";\n");
@@ -116,7 +120,7 @@ public class VizComponentWidget extends FlowPanel {
                 builder.append(edge.getDest().getId());
 
                 HashMap<String, String> params = edge.getParams();
-                params.put("id",svgEdgeId);
+                params.put("id",svgEdgeId);  //Use this ID for GraphViz also
                 writeParameters(params, builder);
                 builder.append(";\n");
             }
@@ -130,7 +134,10 @@ public class VizComponentWidget extends FlowPanel {
             svg = getElement().getFirstChildElement();
             svg.setAttribute("width", "100%");
             svg.setAttribute("height", "100%");
-            
+            String boxid = "_svgbox" + componentID;
+            svg.setId(boxid);
+            setupZoomPanHandler(boxid);
+
         } catch (JavaScriptException e) {
             String result = e.getDescription();
             Label label = new Label(result);
@@ -167,6 +174,26 @@ public class VizComponentWidget extends FlowPanel {
         }
     }
         
+    private static native void setupZoomPanHandler(String id)
+    /*-{
+          $wnd.svgPanZoom('#' + id, {
+			panEnabled: true
+			, controlIconsEnabled: false
+			, zoomEnabled: true
+			, dblClickZoomEnabled: true
+			, mouseWheelZoomEnabled: true
+			, preventMouseEventsDefault: false
+			, zoomScaleSensitivity: 0.2
+			, minZoom: 0.1
+			, maxZoom: 10
+			, fit: true
+			, contain: false
+			, center: true
+			, refreshRate: 'auto'
+			});
+        }-*/
+    ;
+    
     private static native String compileSVG(String graph)
     /*-{
           var result = $wnd.Viz(graph, { format: "svg" });

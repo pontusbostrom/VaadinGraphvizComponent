@@ -12,7 +12,7 @@ import com.vaadin.ui.UI;
  *
  */
 @SuppressWarnings("serial")
-@JavaScript("viz.js")
+@JavaScript({"viz.js", "svg-pan-zoom.min.js"})
 class JSLoader extends AbstractJavaScriptExtension {
 
     public JSLoader(UI ui) {
