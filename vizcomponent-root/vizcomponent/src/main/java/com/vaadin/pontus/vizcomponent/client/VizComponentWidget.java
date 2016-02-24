@@ -46,6 +46,12 @@ public class VizComponentWidget extends FlowPanel {
     }
 
     public void renderGraph(VizComponentState graph) {
+    	
+    	svgIdToNodeIdMap.clear();
+        svgIdToEdgeIdMap.clear();
+        nodeIdToSvgIdMap.clear();
+        edgeIdToSvgIdMap.clear();
+        
         ArrayList<Edge> connections = graph.graph;
         if (svg != null) {
             getElement().removeChild(svg);
@@ -56,8 +62,6 @@ public class VizComponentWidget extends FlowPanel {
         }
         int nodeCounter = 1;
         int edgeCounter = 1;
-        String svgNodeId = null;
-        String svgEdgeId = null;
         String connSymbol;
         if ("graph".equals(graph.graphType)) {
             // It is undirected graph
@@ -92,21 +96,19 @@ public class VizComponentWidget extends FlowPanel {
             // Produce a node in case there are parameters for it and it
             // hasn't been processed before
             if (!nodeIdToSvgIdMap.containsKey(source.getId())) {
-                svgNodeId = "node" + nodeCounter++;
+                String svgNodeId = "node" + nodeCounter++;
                 svgIdToNodeIdMap.put(svgNodeId, source.getId());
                 nodeIdToSvgIdMap.put(source.getId(), svgNodeId);
                 HashMap<String, String> params = source.getParams();
-                if (!params.isEmpty()) {
-                    builder.append(source.getId());
-                    // Produce params
-                    writeParameters(params, builder);
-                    builder.append(";\n");
-                }
+                params.put("id", svgNodeId);
+                builder.append(source.getId());
+                writeParameters(params, builder);
+                builder.append(";\n");
             }
             if (edge.getDest() != null) {
                 // Produce an edge
                 // Each edge only occurs once
-                svgEdgeId = "edge" + edgeCounter++;
+                String svgEdgeId = "edge" + edgeCounter++;
                 svgIdToEdgeIdMap.put(svgEdgeId, edge.getId());
                 edgeIdToSvgIdMap.put(edge.getId(), svgEdgeId);
                 builder.append(source.getId());
@@ -114,10 +116,8 @@ public class VizComponentWidget extends FlowPanel {
                 builder.append(edge.getDest().getId());
 
                 HashMap<String, String> params = edge.getParams();
-                if (!params.isEmpty()) {
-                    // Produce parameters
-                    writeParameters(params, builder);
-                }
+                params.put("id",svgEdgeId);
+                writeParameters(params, builder);
                 builder.append(";\n");
             }
         }
@@ -128,7 +128,9 @@ public class VizComponentWidget extends FlowPanel {
             String result = compileSVG(builder.toString());
             getElement().setInnerHTML(result);
             svg = getElement().getFirstChildElement();
-
+            svg.setAttribute("width", "100%");
+            svg.setAttribute("height", "100%");
+            
         } catch (JavaScriptException e) {
             String result = e.getDescription();
             Label label = new Label(result);
@@ -164,7 +166,7 @@ public class VizComponentWidget extends FlowPanel {
             builder.append(v);
         }
     }
-
+        
     private static native String compileSVG(String graph)
     /*-{
           var result = $wnd.Viz(graph, { format: "svg" });
