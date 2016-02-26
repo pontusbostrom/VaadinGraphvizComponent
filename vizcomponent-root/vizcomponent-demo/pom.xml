@@ -193,10 +193,11 @@
 			</plugin>
 
 			<plugin>
-				<groupId>org.mortbay.jetty</groupId>
+				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
-				<version>8.1.10.v20130312</version>
+				<version>9.3.7.v20160115</version>
 				<configuration>
+					<scanIntervalSeconds>10</scanIntervalSeconds>
 					<webApp>
 						<contextPath>/</contextPath>
 					</webApp>
