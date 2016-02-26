@@ -62,7 +62,6 @@ public class MoreComplexDemoView extends VerticalLayout {
         final TextField heightBox = new TextField("Graph width (px)");
         heightBox.setValue(Integer.toString(height));
         final Button resizeButton = new Button("Resize");
-        final Button size100Button = new Button("Size to 100%");
 
         paramLayout.addComponent(noEdgesBox);
         paramLayout.addComponent(directionBox);
@@ -71,7 +70,6 @@ public class MoreComplexDemoView extends VerticalLayout {
         paramLayout.addComponent(widthBox);
         paramLayout.addComponent(heightBox);
         paramLayout.addComponent(resizeButton);
-        paramLayout.addComponent(size100Button);
         paramLayout.setSpacing(true);
 
         hLayout.addComponent(paramLayout);
@@ -114,8 +112,6 @@ public class MoreComplexDemoView extends VerticalLayout {
             }
 
         });
-        
-        
         resizeButton.addClickListener(new ClickListener() {
 
             @Override
@@ -128,18 +124,6 @@ public class MoreComplexDemoView extends VerticalLayout {
 
         });
 
-        size100Button.addClickListener(new ClickListener() {
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                if (setWidthAndHeight(heightBox.getValue(), widthBox.getValue())) {
-                    component.setWidth(100, Unit.PERCENTAGE);
-                    component.setHeight(100, Unit.PERCENTAGE);
-                }
-            }
-
-        });
-        
         component.addClickListener(new NodeClickListener() {
 
             @Override
@@ -167,7 +151,6 @@ public class MoreComplexDemoView extends VerticalLayout {
         component.setHeight(height + "px");
         Graph graph = new Graph("G", type);
         graph.setParam("rankdir", direction);
-        graph.setParam("fontsize", "30");
 
         // Create a 100 nodes
         List<Graph.Node> nodes = new ArrayList<Graph.Node>();
