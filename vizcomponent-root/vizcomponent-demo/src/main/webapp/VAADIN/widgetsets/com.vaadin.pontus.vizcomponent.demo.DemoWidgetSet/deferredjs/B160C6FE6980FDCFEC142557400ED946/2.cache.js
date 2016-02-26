@@ -1,1 +1,0 @@
-$wnd.com_vaadin_pontus_vizcomponent_demo_DemoWidgetSet.runAsyncCallback2('Kdb(1618,1,O0d);_.wc=function Ehc(){l2b((!e2b&&(e2b=new q2b),e2b),this.a.d)};oWd(Uh)(2);\n//# sourceURL=com.vaadin.pontus.vizcomponent.demo.DemoWidgetSet-2.js\n')
