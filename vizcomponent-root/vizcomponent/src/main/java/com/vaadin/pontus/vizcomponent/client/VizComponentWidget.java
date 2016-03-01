@@ -45,21 +45,20 @@ public class VizComponentWidget extends FlowPanel {
 
     }
 
-    public void renderGraph(VizComponentState graph) {
-        ArrayList<Edge> connections = graph.graph;
+    public void renderGraph(Node graph, String type) {
+
         if (svg != null) {
             getElement().removeChild(svg);
             svg = null;
         }
-        if (connections == null || connections.isEmpty()) {
+        if (graph.graph == null) {
             return;
         }
-        int nodeCounter = 1;
-        int edgeCounter = 1;
-        String svgNodeId = null;
-        String svgEdgeId = null;
+        if (graph.graph.isEmpty()) {
+            return;
+        }
         String connSymbol;
-        if ("graph".equals(graph.graphType)) {
+        if ("graph".equals(type)) {
             // It is undirected graph
             connSymbol = " -- ";
         } else {
@@ -68,11 +67,35 @@ public class VizComponentWidget extends FlowPanel {
         }
 
         StringBuilder builder = new StringBuilder();
-        builder.append(graph.graphType);
+        builder.append(type);
         builder.append(" ");
-        if (graph.name != null) {
-            builder.append(graph.name);
+        if (graph.id != null) {
+            builder.append(graph.id);
         }
+        renderGraph(graph, connSymbol, builder);
+
+        try {
+            String result = compileSVG(builder.toString());
+            getElement().setInnerHTML(result);
+            svg = getElement().getFirstChildElement();
+
+        } catch (JavaScriptException e) {
+            String result = e.getDescription();
+            Label label = new Label(result);
+            add(label);
+        }
+    }
+
+    private void renderGraph(Node graph, String connSymbol,
+            StringBuilder builder) {
+        ArrayList<Edge> connections = graph.graph;
+        // connections should not be empty
+
+        int nodeCounter = 1; // TODO: Counters need to be more global
+        int edgeCounter = 1;
+        String svgNodeId = null;
+        String svgEdgeId = null;
+
         builder.append(" { ");
         if (!graph.params.isEmpty()) {
             writeParameters(graph.params, builder, ";\n");
@@ -88,52 +111,57 @@ public class VizComponentWidget extends FlowPanel {
             writeParameters(graph.edgeParams, builder);
         }
         for (Edge edge : connections) {
-            Node source = edge.getSource();
-            // Produce a node in case there are parameters for it and it
-            // hasn't been processed before
-            if (!nodeIdToSvgIdMap.containsKey(source.getId())) {
-                svgNodeId = "node" + nodeCounter++;
-                svgIdToNodeIdMap.put(svgNodeId, source.getId());
-                nodeIdToSvgIdMap.put(source.getId(), svgNodeId);
-                HashMap<String, String> params = source.getParams();
-                if (!params.isEmpty()) {
-                    builder.append(source.getId());
-                    // Produce params
-                    writeParameters(params, builder);
-                    builder.append(";\n");
+            Node source = edge.source;
+            if (source.graph != null) {
+                builder.append("subgraph ");
+                builder.append(source.id);
+                renderGraph(source, connSymbol, builder);
+
+            } else {
+                // Produce a node in case there are parameters for it and it
+                // hasn't been processed before
+                if (!nodeIdToSvgIdMap.containsKey(source.id)) {
+                    svgNodeId = "node" + nodeCounter++;
+                    svgIdToNodeIdMap.put(svgNodeId, source.id);
+                    nodeIdToSvgIdMap.put(source.id, svgNodeId);
+                    // TODO: The below is redundant. This would be an edge
+                    // statement with empty dest
+                    HashMap<String, String> params = source.params;
+                    if (!params.isEmpty()) {
+                        builder.append(source.id);
+                        // Produce params
+                        writeParameters(params, builder);
+                        builder.append(";\n");
+                    }
                 }
             }
-            if (edge.getDest() != null) {
+            if (edge.dest != null) {
                 // Produce an edge
                 // Each edge only occurs once
                 svgEdgeId = "edge" + edgeCounter++;
-                svgIdToEdgeIdMap.put(svgEdgeId, edge.getId());
-                edgeIdToSvgIdMap.put(edge.getId(), svgEdgeId);
-                builder.append(source.getId());
+                svgIdToEdgeIdMap.put(svgEdgeId, edge.id);
+                edgeIdToSvgIdMap.put(edge.id, svgEdgeId);
+                builder.append(source.id);
                 builder.append(connSymbol);
-                builder.append(edge.getDest().getId());
+                if (edge.dest.graph != null) {
+                    builder.append("subgraph ");
+                    builder.append(edge.dest.id);
+                    renderGraph(edge.dest, connSymbol, builder);
+                } else {
+                    builder.append(edge.dest.id);
+                }
 
-                HashMap<String, String> params = edge.getParams();
+                HashMap<String, String> params = edge.params;
                 if (!params.isEmpty()) {
                     // Produce parameters
                     writeParameters(params, builder);
                 }
                 builder.append(";\n");
             }
+
         }
 
         builder.append(" } ");
-
-        try {
-            String result = compileSVG(builder.toString());
-            getElement().setInnerHTML(result);
-            svg = getElement().getFirstChildElement();
-
-        } catch (JavaScriptException e) {
-            String result = e.getDescription();
-            Label label = new Label(result);
-            add(label);
-        }
     }
 
     private void writeParameters(HashMap<String, String> params,

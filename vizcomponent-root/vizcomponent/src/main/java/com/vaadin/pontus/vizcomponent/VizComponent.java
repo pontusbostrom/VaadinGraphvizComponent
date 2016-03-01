@@ -12,6 +12,7 @@ import com.vaadin.pontus.vizcomponent.client.VizComponentClientRpc;
 import com.vaadin.pontus.vizcomponent.client.VizComponentServerRpc;
 import com.vaadin.pontus.vizcomponent.client.VizComponentState;
 import com.vaadin.pontus.vizcomponent.model.Graph;
+import com.vaadin.pontus.vizcomponent.model.Subgraph;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
@@ -19,7 +20,7 @@ import com.vaadin.util.ReflectTools;
 
 /**
  * This component is used to visualize the graphs represented by
- * {@link com.vaadin.pontus.vizcomponent.model.Graph Graph}. It contains a
+ * {@link com.vaadin.pontus.vizcomponent.model.Subgraph Graph}. It contains a
  * method for rendering graphs and then for registering ClickListeners for nodes
  * and edges in the shown graph. The internal interfaces
  * {@link VizComponent.NodeClickListener NodeClickListener} and
@@ -85,20 +86,20 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
      *
      */
     public static class NodeClickEvent extends ClickEvent {
-        private final Graph.Node node;
+        private final Subgraph.Node node;
 
         public NodeClickEvent(Component source) {
             super(source);
             node = null;
         }
 
-        public NodeClickEvent(Component source, Graph.Node node,
+        public NodeClickEvent(Component source, Subgraph.Node node,
                 MouseEventDetails details) {
             super(source, details);
             this.node = node;
         }
 
-        public Graph.Node getNode() {
+        public Subgraph.Node getNode() {
             return node;
         }
     }
@@ -110,20 +111,20 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
      *
      */
     public static class EdgeClickEvent extends ClickEvent {
-        private final Graph.Edge edge;
+        private final Subgraph.Edge edge;
 
         public EdgeClickEvent(Component source) {
             super(source);
             edge = null;
         }
 
-        public EdgeClickEvent(Component source, Graph.Edge edge,
+        public EdgeClickEvent(Component source, Subgraph.Edge edge,
                 MouseEventDetails details) {
             super(source, details);
             this.edge = edge;
         }
 
-        public Graph.Edge getEdge() {
+        public Subgraph.Edge getEdge() {
             return edge;
         }
 
@@ -134,7 +135,7 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
 
         @Override
         public void nodeClicked(String nodeId, MouseEventDetails mouseDetails) {
-            Graph.Node gnode = graph.getNode(nodeId);
+            Subgraph.Node gnode = graph.getNode(nodeId);
             if (gnode != null) {
                 fireEvent(new NodeClickEvent(VizComponent.this, gnode,
                         mouseDetails));
@@ -143,7 +144,7 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
 
         @Override
         public void edgeClicked(String edgeId, MouseEventDetails mouseDetails) {
-            Graph.Edge gedge = graph.getEdge(edgeId);
+            Subgraph.Edge gedge = graph.getEdge(edgeId);
             if (gedge != null) {
                 fireEvent(new EdgeClickEvent(VizComponent.this, gedge,
                         mouseDetails));
@@ -151,7 +152,7 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
         }
     };
 
-    private Graph graph;
+    private Subgraph graph;
 
     /**
      * The constructor creates an empty component
@@ -176,77 +177,84 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
 
         this.graph = graph;
         if (graph == null) {
-            getState().name = null;
-            getState().params = null;
-            getState().nodeParams = null;
-            getState().edgeParams = null;
             getState().graph = null;
             return;
         }
         getState().graphType = graph.getType();
-        getState().name = null;// Trigger stateChange event for sure. Works?
-                               // Needed?
-        getState().name = graph.getName();
+        getState().graph = null;
+        getState().graph = new Node();
+        getState().graph.id = graph.getName();
+        drawGraph(getState().graph, graph);
+
+    }
+
+    private void drawGraph(Node clientNode, Subgraph graph) {
 
         // Set the graph parameters
-        getState().params = null;
         HashMap<String, String> params = new HashMap<String, String>();
         for (String param : graph.getParams()) {
             params.put(param, graph.getParam(param));
         }
-        getState().params = params;
+        clientNode.params = params;
 
         // Set the node parameters
-        getState().nodeParams = null;
+        clientNode.nodeParams = null;
         params = new HashMap<String, String>();
         for (String param : graph.getNodeParams()) {
             params.put(param, graph.getNodeParam(param));
         }
-        getState().nodeParams = params;
+        clientNode.nodeParams = params;
 
         // Set the edge parameters
-        getState().edgeParams = null;
+        clientNode.edgeParams = null;
         params = new HashMap<String, String>();
         for (String param : graph.getEdgeParams()) {
             params.put(param, graph.getEdgeParam(param));
         }
-        getState().edgeParams = params;
+        clientNode.edgeParams = params;
 
         // Set the graph itself
-        ArrayList<Edge> oldGraph = new ArrayList<Edge>();
+        ArrayList<Edge> newGraph = new ArrayList<Edge>();
 
-        for (Graph.Node node : graph.getNodes()) {
+        for (Subgraph.Node node : graph.getNodes()) {
             Node newNode = new Node();
-            newNode.setId(node.getId());
+            if (node instanceof Subgraph.GraphNode) {
+                newNode.id = node.getId();
+                drawGraph(newNode, ((Subgraph.GraphNode) node).getGraph());
+                // The parameters of the node are ignored
+            } else {
+                newNode.id = node.getId();
 
-            // Add all parameters to node
-            for (String param : node.getParams()) {
-                newNode.getParams().put(param, node.getParam(param));
+                // Add all parameters to node
+                for (String param : node.getParams()) {
+                    newNode.params.put(param, node.getParam(param));
+                }
             }
             // Add all edges
-            Set<AbstractMap.SimpleEntry<Graph.Node, Graph.Edge>> conns = graph
+            Set<AbstractMap.SimpleEntry<Subgraph.Node, Subgraph.Edge>> conns = graph
                     .getConnections(node);
             if (conns.isEmpty()) {
                 Edge newEdge = new Edge();
-                newEdge.setSource(newNode);
-                oldGraph.add(newEdge);
+                newEdge.source = newNode;
+                newGraph.add(newEdge);
             } else {
-                for (AbstractMap.SimpleEntry<Graph.Node, Graph.Edge> conn : conns) {
+                for (AbstractMap.SimpleEntry<Subgraph.Node, Subgraph.Edge> conn : conns) {
                     Edge newEdge = new Edge();
-                    newEdge.setId(conn.getValue().getId());
-                    newEdge.setSource(newNode);
+                    newEdge.id = conn.getValue().getId();
+                    newEdge.source = newNode;
                     Node destNode = new Node();
-                    destNode.setId(conn.getKey().getId());
-                    newEdge.setDest(destNode);
+                    destNode.id = conn.getKey().getId();
+                    newEdge.dest = destNode;
                     for (String param : conn.getValue().getParams()) {
-                        newEdge.getParams().put(param,
+                        newEdge.params.put(param,
                                 conn.getValue().getParam(param));
                     }
-                    oldGraph.add(newEdge);
+                    newGraph.add(newEdge);
                 }
             }
+
         }
-        getState().graph = oldGraph;
+        clientNode.graph = newGraph;
 
     }
 
@@ -272,10 +280,13 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
      * the graph must be rendered before this method has any effect.
      *
      * @param node
+     *            node to apply the css rule to.
      * @param property
+     *            the css property.
      * @param value
+     *            the css property value.
      */
-    public void addCss(Graph.Node node, String property, String value) {
+    public void addCss(Subgraph.Node node, String property, String value) {
         getRpcProxy(VizComponentClientRpc.class).addNodeCss(node.getId(),
                 property, value);
     }
@@ -285,10 +296,13 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
      * graph must be rendered before this method has any effect.
      *
      * @param node
+     *            node to apply the css rule to.
      * @param property
+     *            the css property.
      * @param value
+     *            the css property value.
      */
-    public void addTextCss(Graph.Node node, String property, String value) {
+    public void addTextCss(Subgraph.Node node, String property, String value) {
         getRpcProxy(VizComponentClientRpc.class).addNodeTextCss(node.getId(),
                 property, value);
     }
@@ -298,10 +312,13 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
      * tails as well as paths.
      *
      * @param edge
+     *            edge to apply the css rule to.
      * @param property
+     *            the css property.
      * @param value
+     *            the css property value.
      */
-    public void addCss(Graph.Edge edge, String property, String value) {
+    public void addCss(Subgraph.Edge edge, String property, String value) {
         getRpcProxy(VizComponentClientRpc.class).addEdgeCss(edge.getId(),
                 property, value);
     }
@@ -310,10 +327,13 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
      * The same as for addTextCss for nodes, but this applies to the edge label.
      *
      * @param edge
+     *            edge to apply the css rule to.
      * @param property
+     *            the css property.
      * @param value
+     *            the css property value.
      */
-    public void addTextCss(Graph.Edge edge, String property, String value) {
+    public void addTextCss(Subgraph.Edge edge, String property, String value) {
         getRpcProxy(VizComponentClientRpc.class).addEdgeTextCss(edge.getId(),
                 property, value);
     }

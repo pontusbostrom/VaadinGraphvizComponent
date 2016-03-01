@@ -44,6 +44,7 @@ public class DemoUI extends UI {
         tabs.addTab(new SimpleDemoView(), "Simple demo");
         tabs.addTab(new MoreComplexDemoView(), "More complex demo");
         tabs.addTab(new UMLDemoView(), "An UML demo");
+        tabs.addTab(new SubgraphDemoView(), "Subgraph demo");
 
     }
 

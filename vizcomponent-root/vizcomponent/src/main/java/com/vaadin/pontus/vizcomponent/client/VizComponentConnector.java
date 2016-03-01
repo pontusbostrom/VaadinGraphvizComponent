@@ -119,7 +119,7 @@ public class VizComponentConnector extends AbstractComponentConnector {
     }
 
     private void updateGraph() {
-        getWidget().renderGraph(getState());
+        getWidget().renderGraph(getState().graph, getState().graphType);
         getWidget().addNodeClickHandler(new NodeClickHandler());
         getWidget().addEdgeClickHandler(new EdgeClickHandler());
     }
