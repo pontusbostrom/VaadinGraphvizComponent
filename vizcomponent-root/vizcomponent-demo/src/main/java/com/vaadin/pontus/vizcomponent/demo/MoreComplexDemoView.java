@@ -9,6 +9,7 @@ import com.vaadin.pontus.vizcomponent.VizComponent;
 import com.vaadin.pontus.vizcomponent.VizComponent.EdgeClickEvent;
 import com.vaadin.pontus.vizcomponent.VizComponent.NodeClickEvent;
 import com.vaadin.pontus.vizcomponent.VizComponent.NodeClickListener;
+import com.vaadin.pontus.vizcomponent.client.ZoomSettings;
 import com.vaadin.pontus.vizcomponent.model.Graph;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -49,6 +50,7 @@ public class MoreComplexDemoView extends VerticalLayout {
         HorizontalLayout hLayout = new HorizontalLayout();
         hLayout.setMargin(true);
         hLayout.setSpacing(true);
+        hLayout.setSizeFull();
         VerticalLayout paramLayout = new VerticalLayout();
         final TextField noEdgesBox = new TextField("Number of edges");
         final TextField directionBox = new TextField(
@@ -73,12 +75,15 @@ public class MoreComplexDemoView extends VerticalLayout {
         paramLayout.addComponent(resizeButton);
         paramLayout.addComponent(size100Button);
         paramLayout.setSpacing(true);
+        paramLayout.setWidth(300,Unit.PIXELS);
 
         hLayout.addComponent(paramLayout);
         hLayout.addComponent(panel);
+        hLayout.setExpandRatio(panel, 1);
 
         addComponent(label);
         addComponent(hLayout);
+        setExpandRatio(hLayout, 1);
 
         // setComponentAlignment(panel, Alignment.MIDDLE_CENTER);
 
@@ -163,6 +168,11 @@ public class MoreComplexDemoView extends VerticalLayout {
 
     public void createAndRenderGraph(int noEdges, String direction,
             String type, int width, int height) {
+    	
+    	ZoomSettings zs = new ZoomSettings();
+    	zs.setControlIconsEnabled(true); // TODO: make UI in DEMO for zoom & pan settings
+    	zs.setPreventMouseEventsDefault(true);
+    	component.setPanZoomSettings(zs);
         component.setWidth(width + "px");
         component.setHeight(height + "px");
         Graph graph = new Graph("G", type);

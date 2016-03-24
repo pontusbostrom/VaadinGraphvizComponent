@@ -27,7 +27,23 @@ public class VizComponentConnector extends AbstractComponentConnector {
         // To receive RPC events from server, we register ClientRpc
         // implementation
         registerRpc(VizComponentClientRpc.class, new VizComponentClientRpc() {
-
+        	
+        	
+        	@Override
+        	public void  fitGraph() {
+        		getWidget().fitGraph();
+        	}
+        	
+        	@Override
+        	public void  centerGraph() {
+        		getWidget().centerGraph();
+        	}
+        	
+        	@Override
+        	public void  centerToNode(String nodeId) {
+        		getWidget().centerToNode(nodeId);
+        	}
+        	
             @Override
             public void addNodeCss(String nodeId, String property, String value) {
                 getWidget().addNodeCss(nodeId, property, value);

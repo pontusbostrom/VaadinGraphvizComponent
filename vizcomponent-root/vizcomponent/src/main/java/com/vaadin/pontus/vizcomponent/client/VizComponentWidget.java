@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import com.google.gwt.core.client.JavaScriptException;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.DOM;
@@ -36,6 +37,7 @@ public class VizComponentWidget extends FlowPanel {
 
     static int globalComponentID = 1;
     private final int componentID;
+	private JavaScriptObject zoomPanHandler;
     
     public VizComponentWidget() {
 
@@ -49,14 +51,14 @@ public class VizComponentWidget extends FlowPanel {
 
     }
 
-    public void renderGraph(VizComponentState graph) {
+    public void renderGraph(VizComponentState graphState) {
     	
     	svgIdToNodeIdMap.clear();
         svgIdToEdgeIdMap.clear();
         nodeIdToSvgIdMap.clear();
         edgeIdToSvgIdMap.clear();
         
-        ArrayList<Edge> connections = graph.graph;
+        ArrayList<Edge> connections = graphState.graph;
         if (svg != null) {
             getElement().removeChild(svg);
             svg = null;
@@ -67,7 +69,7 @@ public class VizComponentWidget extends FlowPanel {
         int nodeCounter = 1;
         int edgeCounter = 1;
         String connSymbol;
-        if ("graph".equals(graph.graphType)) {
+        if ("graph".equals(graphState.graphType)) {
             // It is undirected graph
             connSymbol = " -- ";
         } else {
@@ -76,24 +78,24 @@ public class VizComponentWidget extends FlowPanel {
         }
 
         StringBuilder builder = new StringBuilder();
-        builder.append(graph.graphType);
+        builder.append(graphState.graphType);
         builder.append(" ");
-        if (graph.name != null) {
-            builder.append(graph.name);
+        if (graphState.name != null) {
+            builder.append(graphState.name);
         }
         builder.append(" { ");
-        if (!graph.params.isEmpty()) {
-            writeParameters(graph.params, builder, ";\n");
+        if (!graphState.params.isEmpty()) {
+            writeParameters(graphState.params, builder, ";\n");
             builder.append(";\n");
         }
-        if (!graph.nodeParams.isEmpty()) {
+        if (!graphState.nodeParams.isEmpty()) {
             builder.append("node ");
-            writeParameters(graph.nodeParams, builder);
+            writeParameters(graphState.nodeParams, builder);
             builder.append(";");
         }
-        if (!graph.edgeParams.isEmpty()) {
+        if (!graphState.edgeParams.isEmpty()) {
             builder.append("edge ");
-            writeParameters(graph.edgeParams, builder);
+            writeParameters(graphState.edgeParams, builder);
         }
         for (Edge edge : connections) {
             Node source = edge.getSource();
@@ -136,7 +138,10 @@ public class VizComponentWidget extends FlowPanel {
             svg.setAttribute("height", "100%");
             String boxid = "_svgbox" + componentID;
             svg.setId(boxid);
-            setupZoomPanHandler(boxid);
+            if (graphState.zoomsettings != null ){
+            	zoomPanHandler = setupZoomPanHandler(boxid, graphState.zoomsettings);
+            }
+           
 
         } catch (JavaScriptException e) {
             String result = e.getDescription();
@@ -174,21 +179,21 @@ public class VizComponentWidget extends FlowPanel {
         }
     }
         
-    private static native void setupZoomPanHandler(String id)
+    private static native JavaScriptObject setupZoomPanHandler(String id,  ZoomSettings zoomsettings)
     /*-{
-          $wnd.svgPanZoom('#' + id, {
-			panEnabled: true
-			, controlIconsEnabled: false
-			, zoomEnabled: true
-			, dblClickZoomEnabled: true
-			, mouseWheelZoomEnabled: true
-			, preventMouseEventsDefault: false
-			, zoomScaleSensitivity: 0.2
-			, minZoom: 0.1
-			, maxZoom: 10
-			, fit: true
-			, contain: false
-			, center: true
+          return $wnd.svgPanZoom('#' + id, {
+			  panEnabled: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::panEnabled
+			, controlIconsEnabled: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::controlIconsEnabled
+			, zoomEnabled: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::zoomEnabled
+			, dblClickZoomEnabled: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::dblClickZoomEnabled
+			, mouseWheelZoomEnabled: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::mouseWheelZoomEnabled
+			, preventMouseEventsDefault: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::preventMouseEventsDefault
+			, zoomScaleSensitivity: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::zoomScaleSensitivity
+			, minZoom: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::minZoom
+			, maxZoom: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::maxZoom
+			, fit: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::fit
+			, contain: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::contain
+			, center: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::center
 			, refreshRate: 'auto'
 			});
         }-*/
@@ -198,6 +203,40 @@ public class VizComponentWidget extends FlowPanel {
     /*-{
           var result = $wnd.Viz(graph, { format: "svg" });
           return result;
+        }-*/;
+    
+    private static native void panToElement(JavaScriptObject zoomPanHandler, Element el)
+    /*-{
+			zoomPanHandler.pan({x:0,y:0});
+			
+			var bbox = el.getBBox();
+    		var cx = bbox.x + bbox.width/2;
+    		var cy = bbox.y + bbox.height/2;	
+    		
+    		var sizes = zoomPanHandler.getSizes();
+    		cy += sizes.viewBox.height;
+
+    		var realZoom = zoomPanHandler.getSizes().realZoom;
+    		var width = sizes.width;
+    		var height = sizes.height;
+    		var panx = -(cx * realZoom)+(width/2);
+    		var pany = -(cy * realZoom)+(height/2);
+    		zoomPanHandler.pan({
+    			x: panx,
+       			y: pany
+    		});
+            
+        }-*/;
+    
+    private static native void fit(JavaScriptObject zoomPanHandler)
+    /*-{
+          zoomPanHandler.fit();
+          zoomPanHandler.center();
+        }-*/;
+    
+    private static native void center(JavaScriptObject zoomPanHandler)
+    /*-{
+          zoomPanHandler.center();
         }-*/;
 
     public void addNodeClickHandler(final VizClickHandler handler) {
@@ -217,7 +256,6 @@ public class VizComponentWidget extends FlowPanel {
                 public void onBrowserEvent(Event event) {
                     handler.onClick(event);
                 }
-
             });
         }
     }
@@ -237,6 +275,21 @@ public class VizComponentWidget extends FlowPanel {
     public String getEdgeId(Element e) {
         String id = e.getAttribute("id");
         return svgIdToEdgeIdMap.get(id);
+    }
+    
+    public void centerToNode(String nodeId) {
+    	if (svg != null) {
+            String id = nodeIdToSvgIdMap.get(nodeId);
+            panToElement(zoomPanHandler,   DOM.getElementById(id) );
+        }
+    }
+    
+    public void centerGraph() {
+        center(zoomPanHandler);
+    }
+    
+    public void fitGraph() {
+        fit(zoomPanHandler);
     }
 
     public void addNodeCss(String nodeId, String property, String value) {
@@ -305,7 +358,6 @@ public class VizComponentWidget extends FlowPanel {
                 Element child = children.getItem(i);
                 child.getStyle().setProperty(property, value);
             }
-
         }
     }
 
