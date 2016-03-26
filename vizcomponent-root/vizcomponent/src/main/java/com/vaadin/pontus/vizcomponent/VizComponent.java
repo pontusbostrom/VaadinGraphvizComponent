@@ -11,6 +11,7 @@ import com.vaadin.pontus.vizcomponent.client.Node;
 import com.vaadin.pontus.vizcomponent.client.VizComponentClientRpc;
 import com.vaadin.pontus.vizcomponent.client.VizComponentServerRpc;
 import com.vaadin.pontus.vizcomponent.client.VizComponentState;
+import com.vaadin.pontus.vizcomponent.client.ZoomSettings;
 import com.vaadin.pontus.vizcomponent.model.Graph;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.ui.Component;
@@ -163,9 +164,17 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
         new JSLoader(UI.getCurrent());
         // To receive events from the client, we register ServerRpc
         registerRpc(rpc);
-
     }
 
+    /**
+     * Sets the zoomsettings 
+     * NULL disables zoom and pan support in general
+     * @param zoomsettigns
+     */
+    public void setPanZoomSettings (ZoomSettings zoomsettigns) {
+    	getState().zoomsettings = zoomsettigns;
+    }
+    
     /**
      * This method renders and displays the graph given as the argument
      *
@@ -264,6 +273,18 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
     public void addClickListener(EdgeClickListener listener) {
         addListener(EdgeClickEvent.class, listener,
                 EdgeClickListener.CLICK_HANDLER);
+    }
+    
+    public void  centerToNode(Graph.Node node) {
+    	getRpcProxy(VizComponentClientRpc.class).centerToNode(node.getId());
+    }
+    
+    public void  centerGraph() {
+    	getRpcProxy(VizComponentClientRpc.class).centerGraph();
+    }
+    
+    public void  fitGraph() {
+    	getRpcProxy(VizComponentClientRpc.class).fitGraph();
     }
 
     /**

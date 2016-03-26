@@ -6,7 +6,9 @@ import java.util.HashMap;
 @SuppressWarnings("serial")
 public class VizComponentState extends com.vaadin.shared.AbstractComponentState {
 
-    // State can have both public variable and bean properties
+	public ZoomSettings zoomsettings;
+	
+	// State can have both public variable and bean properties
     public ArrayList<Edge> graph;
 
     // Parameters
@@ -17,7 +19,7 @@ public class VizComponentState extends com.vaadin.shared.AbstractComponentState 
 
     // Edge parameters
     public HashMap<String, String> edgeParams;
-
+    
     // graph, digraph
     public String graphType;
 

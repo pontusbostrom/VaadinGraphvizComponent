@@ -39,6 +39,7 @@ public class SimpleDemoView extends VerticalLayout {
         setSizeFull();
         addComponent(label);
         addComponent(component);
+        setExpandRatio(component, 1);
         setComponentAlignment(component, Alignment.MIDDLE_CENTER);
 
         component.addClickListener(new NodeClickListener() {
