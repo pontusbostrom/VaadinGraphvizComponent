@@ -27,23 +27,22 @@ public class VizComponentConnector extends AbstractComponentConnector {
         // To receive RPC events from server, we register ClientRpc
         // implementation
         registerRpc(VizComponentClientRpc.class, new VizComponentClientRpc() {
-        	
-        	
-        	@Override
-        	public void  fitGraph() {
-        		getWidget().fitGraph();
-        	}
-        	
-        	@Override
-        	public void  centerGraph() {
-        		getWidget().centerGraph();
-        	}
-        	
-        	@Override
-        	public void  centerToNode(String nodeId) {
-        		getWidget().centerToNode(nodeId);
-        	}
-        	
+
+            @Override
+            public void fitGraph() {
+                getWidget().fitGraph();
+            }
+
+            @Override
+            public void centerGraph() {
+                getWidget().centerGraph();
+            }
+
+            @Override
+            public void centerToNode(String nodeId) {
+                getWidget().centerToNode(nodeId);
+            }
+
             @Override
             public void addNodeCss(String nodeId, String property, String value) {
                 getWidget().addNodeCss(nodeId, property, value);
@@ -128,10 +127,6 @@ public class VizComponentConnector extends AbstractComponentConnector {
                 || stateChangeEvent.hasPropertyChanged("edgeParams")) {
             updateGraph();
         }
-        if (stateChangeEvent.hasPropertyChanged("height")
-                || stateChangeEvent.hasPropertyChanged("width")) {
-            updateSvgSize();
-        }
     }
 
     private void updateGraph() {
@@ -139,9 +134,4 @@ public class VizComponentConnector extends AbstractComponentConnector {
         getWidget().addNodeClickHandler(new NodeClickHandler());
         getWidget().addEdgeClickHandler(new EdgeClickHandler());
     }
-
-    private void updateSvgSize() {
-        getWidget().updateSvgSize();
-    }
-
 }

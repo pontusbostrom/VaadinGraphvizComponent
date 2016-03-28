@@ -27,45 +27,45 @@ import com.vaadin.ui.VerticalSplitPanel;
 @SuppressWarnings("serial")
 public class InteractiveDemoView extends HorizontalSplitPanel {
 
-	public class NodeInfo {
-		String caption;
-		String info;
-		
-		public NodeInfo(String caption, String info) {
-			super();
-			this.caption = caption;
-			this.info = info;
-		}
-		
-		public String getCaption() {
-			return caption;
-		}
-		public String getInfo() {
-			return info;
-		}
-	}
-	
-	class NodeConnection {
-		NodeInfo parent;
-		NodeInfo child;
-		
-		
-		public NodeConnection(NodeInfo parent, NodeInfo child) {
-			super();
-			this.parent = parent;
-			this.child = child;
-		}
+    public class NodeInfo {
+        String caption;
+        String info;
 
-		public NodeInfo getParent() {
-			return parent;
-		}
-		
-		public NodeInfo getChild() {
-			return child;
-		}
-	}
+        public NodeInfo(String caption, String info) {
+            super();
+            this.caption = caption;
+            this.info = info;
+        }
 
-	// @formatter:off	
+        public String getCaption() {
+            return caption;
+        }
+
+        public String getInfo() {
+            return info;
+        }
+    }
+
+    class NodeConnection {
+        NodeInfo parent;
+        NodeInfo child;
+
+        public NodeConnection(NodeInfo parent, NodeInfo child) {
+            super();
+            this.parent = parent;
+            this.child = child;
+        }
+
+        public NodeInfo getParent() {
+            return parent;
+        }
+
+        public NodeInfo getChild() {
+            return child;
+        }
+    }
+
+    // @formatter:off
 	NodeInfo[] nodes = { new NodeInfo ("Node1", "Nodeinfo for Node 1"),
 						 new NodeInfo ("Node2", "Nodeinfo for Node 2"),
 						 new NodeInfo ("Node3", "Nodeinfo for Node 3"),
@@ -77,8 +77,8 @@ public class InteractiveDemoView extends HorizontalSplitPanel {
 						 new NodeInfo ("Node9", "Nodeinfo for Node 9"),
 						 new NodeInfo ("Node10", "Nodeinfo for Node 10")
 						};
-	
-	
+
+
 	NodeConnection[] connections =   { new NodeConnection(nodes[0], nodes[1]),
 									   new NodeConnection(nodes[0], nodes[5]),
 									   new NodeConnection(nodes[0], nodes[2]),
@@ -91,157 +91,163 @@ public class InteractiveDemoView extends HorizontalSplitPanel {
 									   new NodeConnection(nodes[3], nodes[4])
 									};
 	// @formatter:on
-	
-	private VizComponent graphComponent;
-	Graph graph;
-	Grid grid;
-	private Label infoLabel;
-	
-	String lastSelected = null;
-	Object selectSource;
-	Map<String, NodeInfo> nodeInfoMap;
 
-	public InteractiveDemoView() {
+    private VizComponent graphComponent;
+    Graph graph;
+    Grid grid;
+    private Label infoLabel;
 
-		setFirstComponent(createNodeListPanel());
-		setSecondComponent(createGraphDetailPanel());
-		setSplitPosition(25, Unit.PERCENTAGE);
-		setSizeFull();
-	}
+    String lastSelected = null;
+    Object selectSource;
+    Map<String, NodeInfo> nodeInfoMap;
 
-	private Component createNodeListPanel() {
-		grid = new Grid();
-		grid.setSizeFull();
-		BeanItemContainer<NodeInfo> container = new BeanItemContainer<NodeInfo>(NodeInfo.class, Arrays.asList(nodes));
-		grid.setContainerDataSource(container);
-		
-		grid.addSelectionListener(new SelectionListener() {
-			
-			@Override
-			public void select(SelectionEvent event) {
-								
-				Set<Object> selected = event.getSelected();
-				if (selected.size() > 0) {
-					Object obj = selected.iterator().next(); //Quick and Dirty for Sample, just get the first one
-					
-					NodeInfo ni = (NodeInfo)obj;
-					if (lastSelected != null && !lastSelected.equals(ni.getCaption())) {
-						Graph.Node node = graph.getNode(lastSelected);
-						graphComponent.addCss(node, "fill","white");
-					}
-					lastSelected = ni.getCaption();
-					Graph.Node node = graph.getNode(lastSelected);
-					graphComponent.addCss(node, "fill","orange");
-					if (selectSource == null) {
-						graphComponent.centerToNode(node);
-					}
-					selectSource = null;
-				}
-			}
-		});
-		return grid;
-	}
+    public InteractiveDemoView() {
 
-	@Override
-	public void attach() {
-		super.attach();
-		final Graph graph = createGraph();
-		graphComponent.drawGraph(graph);
-	}
-	
-	private Component createGraphDetailPanel() {
+        setFirstComponent(createNodeListPanel());
+        setSecondComponent(createGraphDetailPanel());
+        setSplitPosition(25, Unit.PERCENTAGE);
+        setSizeFull();
+    }
 
-		VerticalSplitPanel panel = new VerticalSplitPanel();
-		
-		graphComponent = createGraphComponent();
-		
-		HorizontalLayout buttonArea = new HorizontalLayout();
-		//buttonArea.setWidth(100, Unit.PERCENTAGE);
-		
-		buttonArea.addComponent(new Button("Center", new Button.ClickListener() {
-			@Override
-			public void buttonClick(ClickEvent event) {
-				graphComponent.centerGraph();
-			}
-		}));
+    private Component createNodeListPanel() {
+        grid = new Grid();
+        grid.setSizeFull();
+        BeanItemContainer<NodeInfo> container = new BeanItemContainer<NodeInfo>(
+                NodeInfo.class, Arrays.asList(nodes));
+        grid.setContainerDataSource(container);
 
-		buttonArea.addComponent(new Button("Fit", new Button.ClickListener() {
-			@Override
-			public void buttonClick(ClickEvent event) {
-				graphComponent.fitGraph();
-			}
-		}));
-		
-		buttonArea.addComponent(new Button("Recreate", new Button.ClickListener() {
-			@Override
-			public void buttonClick(ClickEvent event) {
-				final Graph graph = createGraph();
-				graphComponent.drawGraph(graph);
-			}
-		}));
+        grid.addSelectionListener(new SelectionListener() {
 
-		
-		VerticalLayout pane = new VerticalLayout();
-		pane.setSizeFull();
+            @Override
+            public void select(SelectionEvent event) {
 
-		pane.addComponent(buttonArea);
-		pane.setComponentAlignment(buttonArea, Alignment.MIDDLE_RIGHT);
-		pane.addComponent(graphComponent);
-		pane.setExpandRatio(graphComponent, 1);
+                Set<Object> selected = event.getSelected();
+                if (selected.size() > 0) {
+                    Object obj = selected.iterator().next(); // Quick and Dirty
+                                                             // for Sample, just
+                                                             // get the first
+                                                             // one
 
-		panel.setSplitPosition(80, Unit.PERCENTAGE);
-		panel.setSizeFull();
-		panel.setFirstComponent(pane);
-		panel.setSecondComponent(infoLabel);
+                    NodeInfo ni = (NodeInfo) obj;
+                    if (lastSelected != null
+                            && !lastSelected.equals(ni.getCaption())) {
+                        Graph.Node node = graph.getNode(lastSelected);
+                        graphComponent.addCss(node, "fill", "white");
+                    }
+                    lastSelected = ni.getCaption();
+                    Graph.Node node = graph.getNode(lastSelected);
+                    graphComponent.addCss(node, "fill", "orange");
+                    if (selectSource == null) {
+                        graphComponent.centerToNode(node);
+                    }
+                    selectSource = null;
+                }
+            }
+        });
+        return grid;
+    }
 
-		return panel;
-	}
+    @Override
+    public void attach() {
+        super.attach();
+        final Graph graph = createGraph();
+        graphComponent.drawGraph(graph);
+    }
 
-	private VizComponent createGraphComponent() {
-		
-		final VizComponent component = new VizComponent();
-		ZoomSettings zs = new ZoomSettings();
-		zs.setPreventMouseEventsDefault(true);
-		component.setPanZoomSettings(zs);
-		component.setSizeFull();
-		component.addClickListener(new NodeClickListener() {
+    private Component createGraphDetailPanel() {
 
-			@Override
-			public void nodeClicked(NodeClickEvent e) {
-				Graph.Node node = e.getNode();
-				node.getId();
-				NodeInfo ni = nodeInfoMap.get(node.getId());
-				selectSource = this;
-				grid.select(ni);
-				selectSource = null;
-			}
-		});
+        VerticalSplitPanel panel = new VerticalSplitPanel();
 
-		return component;
-	}
+        graphComponent = createGraphComponent();
 
-	private Graph createGraph() {
+        HorizontalLayout buttonArea = new HorizontalLayout();
+        // buttonArea.setWidth(100, Unit.PERCENTAGE);
 
-		nodeInfoMap = new HashMap<String , NodeInfo>();
-		graph = new Graph("G", Graph.DIGRAPH);
-		for (NodeInfo ni : nodes) {
+        buttonArea.addComponent(new Button("Center",
+                new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        graphComponent.centerGraph();
+                    }
+                }));
 
-			Graph.Node node = new Graph.Node(ni.getCaption());
-			nodeInfoMap.put(node.getId(), ni);
-			node.setParam("label", ni.getCaption());
-			node.setParam("shape", "box");
-			node.setParam("fillcolor", "white");
-			graph.addNode(node);
-		}
+        buttonArea.addComponent(new Button("Fit", new Button.ClickListener() {
+            @Override
+            public void buttonClick(ClickEvent event) {
+                graphComponent.fitGraph();
+            }
+        }));
 
-		for (NodeConnection nc : connections) {
-			Graph.Node node1 = new Graph.Node(nc.getParent().getCaption());
-			Graph.Node node2 = new Graph.Node(nc.getChild().getCaption());
+        buttonArea.addComponent(new Button("Recreate",
+                new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        final Graph graph = createGraph();
+                        graphComponent.drawGraph(graph);
+                    }
+                }));
 
-			Graph.Edge edge = graph.addEdge(node1, node2);
-			edge.setParam("color", "red");
-		}
-		return graph;
-	}
+        VerticalLayout pane = new VerticalLayout();
+        pane.setSizeFull();
+
+        pane.addComponent(buttonArea);
+        pane.setComponentAlignment(buttonArea, Alignment.MIDDLE_RIGHT);
+        pane.addComponent(graphComponent);
+        pane.setExpandRatio(graphComponent, 1);
+
+        panel.setSplitPosition(80, Unit.PERCENTAGE);
+        panel.setSizeFull();
+        panel.setFirstComponent(pane);
+        panel.setSecondComponent(infoLabel);
+
+        return panel;
+    }
+
+    private VizComponent createGraphComponent() {
+
+        final VizComponent component = new VizComponent();
+        ZoomSettings zs = new ZoomSettings();
+        zs.setPreventMouseEventsDefault(true);
+        component.setPanZoomSettings(zs);
+        component.setSizeFull();
+        component.addClickListener(new NodeClickListener() {
+
+            @Override
+            public void nodeClicked(NodeClickEvent e) {
+                Graph.Node node = e.getNode();
+                node.getId();
+                NodeInfo ni = nodeInfoMap.get(node.getId());
+                selectSource = this;
+                grid.select(ni);
+                selectSource = null;
+            }
+        });
+
+        return component;
+    }
+
+    private Graph createGraph() {
+
+        nodeInfoMap = new HashMap<String, NodeInfo>();
+        graph = new Graph("G", Graph.DIGRAPH);
+        for (NodeInfo ni : nodes) {
+
+            Graph.Node node = new Graph.Node(ni.getCaption());
+            nodeInfoMap.put(node.getId(), ni);
+            node.setParam("label", ni.getCaption());
+            node.setParam("shape", "box");
+            node.setParam("fillcolor", "white");
+            graph.addNode(node);
+        }
+
+        for (NodeConnection nc : connections) {
+            Graph.Node node1 = new Graph.Node(nc.getParent().getCaption());
+            Graph.Node node2 = new Graph.Node(nc.getChild().getCaption());
+
+            Graph.Edge edge = graph.addEdge(node1, node2);
+            edge.setParam("color", "red");
+        }
+        return graph;
+    }
 
 }

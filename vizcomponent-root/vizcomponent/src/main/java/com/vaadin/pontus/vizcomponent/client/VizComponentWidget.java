@@ -7,6 +7,8 @@ import java.util.Set;
 
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.DOM;
@@ -37,8 +39,8 @@ public class VizComponentWidget extends FlowPanel {
 
     static int globalComponentID = 1;
     private final int componentID;
-	private JavaScriptObject zoomPanHandler;
-    
+    private JavaScriptObject zoomPanHandler;
+
     public VizComponentWidget() {
 
         // CSS class-name should not be v- prefixed
@@ -51,13 +53,13 @@ public class VizComponentWidget extends FlowPanel {
 
     }
 
-    public void renderGraph(VizComponentState graphState) {
-    	
-    	svgIdToNodeIdMap.clear();
+    public void renderGraph(final VizComponentState graphState) {
+
+        svgIdToNodeIdMap.clear();
         svgIdToEdgeIdMap.clear();
         nodeIdToSvgIdMap.clear();
         edgeIdToSvgIdMap.clear();
-        
+
         ArrayList<Edge> connections = graphState.graph;
         if (svg != null) {
             getElement().removeChild(svg);
@@ -106,7 +108,7 @@ public class VizComponentWidget extends FlowPanel {
                 svgIdToNodeIdMap.put(svgNodeId, source.getId());
                 nodeIdToSvgIdMap.put(source.getId(), svgNodeId);
                 HashMap<String, String> params = source.getParams();
-                params.put("id", svgNodeId); //Use this ID for GraphViz also
+                params.put("id", svgNodeId); // Use this ID for GraphViz also
                 builder.append(source.getId());
                 writeParameters(params, builder);
                 builder.append(";\n");
@@ -122,7 +124,7 @@ public class VizComponentWidget extends FlowPanel {
                 builder.append(edge.getDest().getId());
 
                 HashMap<String, String> params = edge.getParams();
-                params.put("id",svgEdgeId);  //Use this ID for GraphViz also
+                params.put("id", svgEdgeId); // Use this ID for GraphViz also
                 writeParameters(params, builder);
                 builder.append(";\n");
             }
@@ -133,15 +135,24 @@ public class VizComponentWidget extends FlowPanel {
         try {
             String result = compileSVG(builder.toString());
             getElement().setInnerHTML(result);
+            final String boxid = "_svgbox" + componentID;
             svg = getElement().getFirstChildElement();
             svg.setAttribute("width", "100%");
             svg.setAttribute("height", "100%");
-            String boxid = "_svgbox" + componentID;
             svg.setId(boxid);
-            if (graphState.zoomsettings != null ){
-            	zoomPanHandler = setupZoomPanHandler(boxid, graphState.zoomsettings);
+
+            if (graphState.zoomsettings != null) {
+                // For some reason zooming doesn't work when the component is
+                // created
+                // This way zoom actions are deferred until afterwards.
+                Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+                    @Override
+                    public void execute() {
+                        zoomPanHandler = setupZoomPanHandler(boxid,
+                                graphState.zoomsettings);
+                    }
+                });
             }
-           
 
         } catch (JavaScriptException e) {
             String result = e.getDescription();
@@ -178,41 +189,43 @@ public class VizComponentWidget extends FlowPanel {
             builder.append(v);
         }
     }
-        
-    private static native JavaScriptObject setupZoomPanHandler(String id,  ZoomSettings zoomsettings)
+
+    private static native JavaScriptObject setupZoomPanHandler(String id,
+            ZoomSettings zoomsettings)
     /*-{
           return $wnd.svgPanZoom('#' + id, {
-			  panEnabled: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::panEnabled
-			, controlIconsEnabled: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::controlIconsEnabled
-			, zoomEnabled: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::zoomEnabled
-			, dblClickZoomEnabled: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::dblClickZoomEnabled
-			, mouseWheelZoomEnabled: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::mouseWheelZoomEnabled
-			, preventMouseEventsDefault: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::preventMouseEventsDefault
-			, zoomScaleSensitivity: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::zoomScaleSensitivity
-			, minZoom: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::minZoom
-			, maxZoom: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::maxZoom
-			, fit: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::fit
-			, contain: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::contain
-			, center: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::center
-			, refreshRate: 'auto'
-			});
+    		  panEnabled: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::panEnabled
+    		, controlIconsEnabled: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::controlIconsEnabled
+    		, zoomEnabled: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::zoomEnabled
+    		, dblClickZoomEnabled: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::dblClickZoomEnabled
+    		, mouseWheelZoomEnabled: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::mouseWheelZoomEnabled
+    		, preventMouseEventsDefault: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::preventMouseEventsDefault
+    		, zoomScaleSensitivity: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::zoomScaleSensitivity
+    		, minZoom: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::minZoom
+    		, maxZoom: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::maxZoom
+    		, fit: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::fit
+    		, contain: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::contain
+    		, center: zoomsettings.@com.vaadin.pontus.vizcomponent.client.ZoomSettings::center
+    		, refreshRate: 'auto'
+    		});
         }-*/
     ;
-    
+
     private static native String compileSVG(String graph)
     /*-{
           var result = $wnd.Viz(graph, { format: "svg" });
           return result;
         }-*/;
-    
-    private static native void panToElement(JavaScriptObject zoomPanHandler, Element el)
+
+    private static native void panToElement(JavaScriptObject zoomPanHandler,
+            Element el)
     /*-{
-			zoomPanHandler.pan({x:0,y:0});
-			
-			var bbox = el.getBBox();
+    		zoomPanHandler.pan({x:0,y:0});
+
+    		var bbox = el.getBBox();
     		var cx = bbox.x + bbox.width/2;
-    		var cy = bbox.y + bbox.height/2;	
-    		
+    		var cy = bbox.y + bbox.height/2;
+
     		var sizes = zoomPanHandler.getSizes();
     		cy += sizes.viewBox.height;
 
@@ -225,15 +238,15 @@ public class VizComponentWidget extends FlowPanel {
     			x: panx,
        			y: pany
     		});
-            
+
         }-*/;
-    
+
     private static native void fit(JavaScriptObject zoomPanHandler)
     /*-{
           zoomPanHandler.fit();
           zoomPanHandler.center();
         }-*/;
-    
+
     private static native void center(JavaScriptObject zoomPanHandler)
     /*-{
           zoomPanHandler.center();
@@ -276,18 +289,18 @@ public class VizComponentWidget extends FlowPanel {
         String id = e.getAttribute("id");
         return svgIdToEdgeIdMap.get(id);
     }
-    
+
     public void centerToNode(String nodeId) {
-    	if (svg != null) {
+        if (svg != null) {
             String id = nodeIdToSvgIdMap.get(nodeId);
-            panToElement(zoomPanHandler,   DOM.getElementById(id) );
+            panToElement(zoomPanHandler, DOM.getElementById(id));
         }
     }
-    
+
     public void centerGraph() {
         center(zoomPanHandler);
     }
-    
+
     public void fitGraph() {
         fit(zoomPanHandler);
     }
@@ -359,14 +372,6 @@ public class VizComponentWidget extends FlowPanel {
                 child.getStyle().setProperty(property, value);
             }
         }
-    }
-
-    public void updateSvgSize() {
-        if (svg == null) {
-            return;
-        }
-        svg.setAttribute("width", getOffsetWidth() + "px");
-        svg.setAttribute("height", getOffsetHeight() + "px");
     }
 
 }
