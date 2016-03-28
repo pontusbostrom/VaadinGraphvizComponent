@@ -167,14 +167,14 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
     }
 
     /**
-     * Sets the zoomsettings 
-     * NULL disables zoom and pan support in general
+     * Sets the zoomsettings NULL disables zoom and pan support in general
+     *
      * @param zoomsettigns
      */
-    public void setPanZoomSettings (ZoomSettings zoomsettigns) {
-    	getState().zoomsettings = zoomsettigns;
+    public void setPanZoomSettings(ZoomSettings zoomsettigns) {
+        getState().zoomsettings = zoomsettigns;
     }
-    
+
     /**
      * This method renders and displays the graph given as the argument
      *
@@ -195,7 +195,7 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
         getState().graphType = graph.getType();
         getState().name = null;// Trigger stateChange event for sure. Works?
                                // Needed?
-        getState().name = graph.getName();
+        getState().name = escapeId(graph.getName());
 
         // Set the graph parameters
         getState().params = null;
@@ -226,7 +226,7 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
 
         for (Graph.Node node : graph.getNodes()) {
             Node newNode = new Node();
-            newNode.setId(node.getId());
+            newNode.setId(escapeId(node.getId()));
 
             // Add all parameters to node
             for (String param : node.getParams()) {
@@ -242,10 +242,10 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
             } else {
                 for (AbstractMap.SimpleEntry<Graph.Node, Graph.Edge> conn : conns) {
                     Edge newEdge = new Edge();
-                    newEdge.setId(conn.getValue().getId());
+                    newEdge.setId(escapeId(conn.getValue().getId()));
                     newEdge.setSource(newNode);
                     Node destNode = new Node();
-                    destNode.setId(conn.getKey().getId());
+                    destNode.setId(escapeId(conn.getKey().getId()));
                     newEdge.setDest(destNode);
                     for (String param : conn.getValue().getParams()) {
                         newEdge.getParams().put(param,
@@ -257,6 +257,16 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
         }
         getState().graph = oldGraph;
 
+    }
+
+    private static String escapeId(String id) {
+        if (id.startsWith("\"") && id.endsWith("\"")) {
+            return id;
+        } else {
+            // Automatically enclose with "" so that special characters work
+            // automatically in id:s
+            return "\"" + id + "\"";
+        }
     }
 
     // We must override getState() to cast the state to VizComponentState
@@ -274,17 +284,17 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
         addListener(EdgeClickEvent.class, listener,
                 EdgeClickListener.CLICK_HANDLER);
     }
-    
-    public void  centerToNode(Graph.Node node) {
-    	getRpcProxy(VizComponentClientRpc.class).centerToNode(node.getId());
+
+    public void centerToNode(Graph.Node node) {
+        getRpcProxy(VizComponentClientRpc.class).centerToNode(node.getId());
     }
-    
-    public void  centerGraph() {
-    	getRpcProxy(VizComponentClientRpc.class).centerGraph();
+
+    public void centerGraph() {
+        getRpcProxy(VizComponentClientRpc.class).centerGraph();
     }
-    
-    public void  fitGraph() {
-    	getRpcProxy(VizComponentClientRpc.class).fitGraph();
+
+    public void fitGraph() {
+        getRpcProxy(VizComponentClientRpc.class).fitGraph();
     }
 
     /**
