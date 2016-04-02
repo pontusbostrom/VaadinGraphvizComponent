@@ -65,7 +65,7 @@ public class UMLDemoView extends VerticalLayout {
         graph.setNodeParameter("shape", "none");
         graph.setParam("rankdir", "BT");
 
-        Graph.Node node1 = new Graph.Node("\"java.lang.Object\"");
+        Graph.Node node1 = new Graph.Node("java.lang.Object");
         node1.setParam(
                 "label",
                 createLabel(
@@ -77,7 +77,7 @@ public class UMLDemoView extends VerticalLayout {
         graph.addNode(node1);
 
         Graph.Node node2 = new Graph.Node(
-                "\"com.vaadin.server.AbstractClientConnector\"");
+                "com.vaadin.server.AbstractClientConnector");
         node2.setParam(
                 "label",
                 createLabel(
@@ -88,7 +88,7 @@ public class UMLDemoView extends VerticalLayout {
                         false));
         graph.addNode(node2);
 
-        Graph.Node node3 = new Graph.Node("\"com.vaadin.ui.AbstractComponent\"");
+        Graph.Node node3 = new Graph.Node("com.vaadin.ui.AbstractComponent");
         node3.setParam(
                 "label",
                 createLabel(
@@ -100,7 +100,7 @@ public class UMLDemoView extends VerticalLayout {
         graph.addNode(node3);
 
         Graph.Node node4 = new Graph.Node(
-                "\"com.vaadin.ui.AbstractComponentContainer\"");
+                "com.vaadin.ui.AbstractComponentContainer");
         node4.setParam(
                 "label",
                 createLabel(
@@ -111,7 +111,7 @@ public class UMLDemoView extends VerticalLayout {
                         false));
         graph.addNode(node4);
 
-        Graph.Node node5 = new Graph.Node("\"com.vaadin.ui.Component\"");
+        Graph.Node node5 = new Graph.Node("com.vaadin.ui.Component");
         node5.setParam(
                 "label",
                 createLabel(
@@ -121,7 +121,7 @@ public class UMLDemoView extends VerticalLayout {
                                 "String getId()"), true));
         graph.addNode(node5);
 
-        Graph.Node node6 = new Graph.Node("\"com.vaadin.ui.HasComponents\"");
+        Graph.Node node6 = new Graph.Node("com.vaadin.ui.HasComponents");
         node6.setParam(
                 "label",
                 createLabel("HasComponents",

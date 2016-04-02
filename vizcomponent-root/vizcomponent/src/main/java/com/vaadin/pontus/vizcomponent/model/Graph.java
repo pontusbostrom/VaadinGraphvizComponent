@@ -30,7 +30,7 @@ public class Graph extends Parameterised {
 
     /**
      * Base class for nodes and edges.
-     * 
+     *
      * @author Pontus Boström
      *
      */
@@ -38,7 +38,19 @@ public class Graph extends Parameterised {
         protected String id;
 
         public GraphElement() {
-            id = null;
+            id = "";
+        }
+
+        public GraphElement(String id) {
+            this.id = deescapeId(id);
+        }
+
+        private static String deescapeId(String str) {
+            if (str.startsWith("\"") && str.endsWith("\"")) {
+                return str.substring(1, str.length() - 1);
+            } else {
+                return str;
+            }
         }
 
         public String getId() {
@@ -74,8 +86,7 @@ public class Graph extends Parameterised {
     public static class Node extends GraphElement {
 
         public Node(String id) {
-            super();
-            this.id = id;
+            super(id);
         }
     }
 
@@ -91,8 +102,7 @@ public class Graph extends Parameterised {
         private Node dest;
 
         public Edge() {
-            super();
-            id = "edge" + counter++;
+            super("edge" + counter++);
         }
 
         public Node getDest() {
@@ -127,7 +137,7 @@ public class Graph extends Parameterised {
     public Graph(String name, String type) {
         super();
         graph = new HashMap<Node, Set<AbstractMap.SimpleEntry<Node, Edge>>>();
-        this.name = name;
+        this.name = GraphElement.deescapeId(name);
         this.type = type;
         nodeParams = new Parameterised();
         edgeParams = new Parameterised();
@@ -170,7 +180,7 @@ public class Graph extends Parameterised {
         } else {
             destSet.add(edgeDest);
         }
-        
+
         return edge;
     }
 

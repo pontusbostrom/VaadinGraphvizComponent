@@ -261,7 +261,7 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
 
     private static String escapeId(String id) {
         if (id.startsWith("\"") && id.endsWith("\"")) {
-            return id;
+            throw new RedundantDoubleQouteException();
         } else {
             // Automatically enclose with "" so that special characters work
             // automatically in id:s

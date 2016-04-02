@@ -103,10 +103,11 @@ public class VizComponentWidget extends FlowPanel {
             Node source = edge.getSource();
             // Produce a node in case there are parameters for it and it
             // hasn't been processed before
-            if (!nodeIdToSvgIdMap.containsKey(source.getId())) {
+            String sourceId = deescapeId(source.getId());
+            if (!nodeIdToSvgIdMap.containsKey(sourceId)) {
                 String svgNodeId = "node" + nodeCounter++;
-                svgIdToNodeIdMap.put(svgNodeId, source.getId());
-                nodeIdToSvgIdMap.put(source.getId(), svgNodeId);
+                svgIdToNodeIdMap.put(svgNodeId, sourceId);
+                nodeIdToSvgIdMap.put(sourceId, svgNodeId);
                 HashMap<String, String> params = source.getParams();
                 params.put("id", svgNodeId); // Use this ID for GraphViz also
                 builder.append(source.getId());
@@ -116,9 +117,10 @@ public class VizComponentWidget extends FlowPanel {
             if (edge.getDest() != null) {
                 // Produce an edge
                 // Each edge only occurs once
+                String edgeId = deescapeId(edge.getId());
                 String svgEdgeId = "edge" + edgeCounter++;
-                svgIdToEdgeIdMap.put(svgEdgeId, edge.getId());
-                edgeIdToSvgIdMap.put(edge.getId(), svgEdgeId);
+                svgIdToEdgeIdMap.put(svgEdgeId, edgeId);
+                edgeIdToSvgIdMap.put(edgeId, svgEdgeId);
                 builder.append(source.getId());
                 builder.append(connSymbol);
                 builder.append(edge.getDest().getId());
@@ -158,6 +160,14 @@ public class VizComponentWidget extends FlowPanel {
             String result = e.getDescription();
             Label label = new Label(result);
             add(label);
+        }
+    }
+
+    private String deescapeId(String str) {
+        if (str.startsWith("\"") && str.endsWith("\"")) {
+            return str.substring(1, str.length() - 1);
+        } else {
+            return str;
         }
     }
 
