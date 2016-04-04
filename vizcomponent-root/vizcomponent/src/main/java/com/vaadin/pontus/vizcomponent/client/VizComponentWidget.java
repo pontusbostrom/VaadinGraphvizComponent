@@ -40,6 +40,8 @@ public class VizComponentWidget extends FlowPanel {
     static int globalComponentID = 1;
     private final int componentID;
     private JavaScriptObject zoomPanHandler;
+    private int nodeCounter;
+    private int edgeCounter;
 
     public VizComponentWidget() {
 
@@ -50,6 +52,8 @@ public class VizComponentWidget extends FlowPanel {
         nodeIdToSvgIdMap = new HashMap<String, String>();
         edgeIdToSvgIdMap = new HashMap<String, String>();
         componentID = globalComponentID++;
+        nodeCounter = 0;
+        edgeCounter = 0;
 
     }
 
@@ -60,6 +64,8 @@ public class VizComponentWidget extends FlowPanel {
         svgIdToEdgeIdMap.clear();
         nodeIdToSvgIdMap.clear();
         edgeIdToSvgIdMap.clear();
+        nodeCounter = 1;
+        edgeCounter = 1;
         if (svg != null) {
             getElement().removeChild(svg);
             svg = null;
@@ -67,8 +73,6 @@ public class VizComponentWidget extends FlowPanel {
         if (graph.graph == null) {
             return;
         }
-        int nodeCounter = 1;
-        int edgeCounter = 1;
         if (graph.graph.isEmpty()) {
             return;
         }
@@ -87,6 +91,7 @@ public class VizComponentWidget extends FlowPanel {
         if (graph.id != null) {
             builder.append(graph.id);
         }
+
         renderGraph(graph, connSymbol, builder);
 
         try {
@@ -123,8 +128,6 @@ public class VizComponentWidget extends FlowPanel {
         ArrayList<Edge> connections = graph.graph;
         // connections should not be empty
 
-        int nodeCounter = 1; // TODO: Counters need to be more global
-        int edgeCounter = 1;
         String svgNodeId = null;
         String svgEdgeId = null;
 
@@ -153,7 +156,7 @@ public class VizComponentWidget extends FlowPanel {
                 // Produce a node in case there are parameters for it and it
                 // hasn't been processed before
                 String sourceId = deescapeId(source.id);
-                if (!nodeIdToSvgIdMap.containsKey(source.id)) {
+                if (!nodeIdToSvgIdMap.containsKey(sourceId)) {
                     svgNodeId = "node" + nodeCounter++;
                     svgIdToNodeIdMap.put(svgNodeId, sourceId);
                     nodeIdToSvgIdMap.put(sourceId, svgNodeId);
@@ -163,8 +166,10 @@ public class VizComponentWidget extends FlowPanel {
                     builder.append(source.id);
                     // Produce params
                     params.put("id", svgNodeId); // Use this ID for GraphViz
-                                                 // also
-                    writeParameters(params, builder);
+                    // also
+                    if (!params.isEmpty()) {
+                        writeParameters(params, builder);
+                    }
                     builder.append(";\n");
                 }
             }
@@ -175,7 +180,13 @@ public class VizComponentWidget extends FlowPanel {
                 svgEdgeId = "edge" + edgeCounter++;
                 svgIdToEdgeIdMap.put(svgEdgeId, edgeId);
                 edgeIdToSvgIdMap.put(edgeId, svgEdgeId);
-                builder.append(source.id);
+                if (source.graph != null) {
+                    builder.append("subgraph ");
+                    builder.append(source.id);
+                    renderGraph(source, connSymbol, builder);
+                } else {
+                    builder.append(source.id);
+                }
                 builder.append(connSymbol);
                 if (edge.dest.graph != null) {
                     builder.append("subgraph ");
@@ -187,7 +198,9 @@ public class VizComponentWidget extends FlowPanel {
                 HashMap<String, String> params = edge.params;
                 params.put("id", svgEdgeId); // Use this ID for GraphViz also
                 // Produce parameters
-                writeParameters(params, builder);
+                if (!params.isEmpty()) {
+                    writeParameters(params, builder);
+                }
                 builder.append(";\n");
             }
 

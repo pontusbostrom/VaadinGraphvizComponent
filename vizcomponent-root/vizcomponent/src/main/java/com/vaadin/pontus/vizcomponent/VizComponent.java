@@ -190,20 +190,14 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
             return;
         }
         getState().graphType = graph.getType();
-<<<<<<< HEAD
-        getState().name = null;// Trigger stateChange event for sure. Works?
-                               // Needed?
-        getState().name = escapeId(graph.getName());
-=======
         getState().graph = null;
         getState().graph = new Node();
-        getState().graph.id = graph.getName();
+        getState().graph.id = escapeId(graph.getName());
         drawGraph(getState().graph, graph);
 
     }
 
     private void drawGraph(Node clientNode, Subgraph graph) {
->>>>>>> refs/heads/subgraphs
 
         // Set the graph parameters
         HashMap<String, String> params = new HashMap<String, String>();
@@ -233,16 +227,12 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
 
         for (Subgraph.Node node : graph.getNodes()) {
             Node newNode = new Node();
-<<<<<<< HEAD
-            newNode.setId(escapeId(node.getId()));
-=======
             if (node instanceof Subgraph.GraphNode) {
-                newNode.id = node.getId();
+                newNode.id = escapeId(node.getId());
                 drawGraph(newNode, ((Subgraph.GraphNode) node).getGraph());
                 // The parameters of the node are ignored
             } else {
-                newNode.id = node.getId();
->>>>>>> refs/heads/subgraphs
+                newNode.id = escapeId(node.getId());
 
                 // Add all parameters to node
                 for (String param : node.getParams()) {
@@ -259,25 +249,24 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
             } else {
                 for (AbstractMap.SimpleEntry<Subgraph.Node, Subgraph.Edge> conn : conns) {
                     Edge newEdge = new Edge();
-<<<<<<< HEAD
-                    newEdge.setId(escapeId(conn.getValue().getId()));
-                    newEdge.setSource(newNode);
-=======
-                    newEdge.id = conn.getValue().getId();
+                    newEdge.id = escapeId(conn.getValue().getId());
                     newEdge.source = newNode;
->>>>>>> refs/heads/subgraphs
+                    Subgraph.Node dest = conn.getKey();
                     Node destNode = new Node();
-<<<<<<< HEAD
-                    destNode.setId(escapeId(conn.getKey().getId()));
-                    newEdge.setDest(destNode);
-=======
-                    destNode.id = conn.getKey().getId();
-                    newEdge.dest = destNode;
->>>>>>> refs/heads/subgraphs
-                    for (String param : conn.getValue().getParams()) {
-                        newEdge.params.put(param,
-                                conn.getValue().getParam(param));
+                    if (dest instanceof Subgraph.GraphNode) {
+                        destNode.id = escapeId(dest.getId());
+                        drawGraph(destNode,
+                                ((Subgraph.GraphNode) dest).getGraph());
+                        // The parameters of the node are ignored
+                    } else {
+                        destNode.id = escapeId(dest.getId());
+
+                        for (String param : conn.getValue().getParams()) {
+                            newEdge.params.put(param,
+                                    conn.getValue().getParam(param));
+                        }
                     }
+                    newEdge.dest = destNode;
                     newGraph.add(newEdge);
                 }
             }

@@ -145,7 +145,7 @@ public class Subgraph extends Parameterised {
      * @param source
      * @param dest
      */
-    public void addEdge(Node source, Node dest) {
+    public Edge addEdge(Node source, Node dest) {
         Edge edge = new Edge();
         edgeMap.put(edge.getId(), edge);
         AbstractMap.SimpleEntry<Node, Edge> edgeDest = new AbstractMap.SimpleEntry<Node, Edge>(
@@ -163,6 +163,7 @@ public class Subgraph extends Parameterised {
         } else {
             destSet.add(edgeDest);
         }
+        return edge;
     }
 
     /**

@@ -9,9 +9,8 @@ public class Graph extends Subgraph {
     private String id;
 
     public Graph(String name, String type) {
-
         this.type = type;
-        id = name;
+        id = GraphElement.deescapeId(name);
     }
 
     public String getType() {

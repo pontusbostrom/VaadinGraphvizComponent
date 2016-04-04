@@ -20,6 +20,9 @@ public class Node {
 
     public Node() {
         params = new HashMap<String, String>();
+        graph = null;
+        nodeParams = null;
+        edgeParams = null;
     }
 
 }
