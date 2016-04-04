@@ -1,6 +1,6 @@
 #VizComponent Add-on for Vaadin 7
 
-VizComponent is an UI component add-on for Vaadin 7. It used for displaying graphs rendered using a Javascript translation of the Graphviz package, [viz.js](https://github.com/mdaines/viz.js/). On the server side the graphs are represented by the com.vaadin.pontus.vizcomponent.model.Graph.Java class, which provides a hopefully convenient api to modify graphs. The viz.js library is then used in the web-browser to render this graph to an SVG element that is included in the component. The nodes and edges in the SVG are clickable and it is possible to register listeners for clicks server-side. It is also possible to style nodes and edges using CSS in response to clicks. Use of the features of the component is demonstrated in the included demos. The viz.js library is included in this package. The license for viz.js is provided in the viz.js.LICENCE.txt file. SVG is handled by the library lib-gwt-svg. It is released under LGBL.
+VizComponent is an UI component add-on for Vaadin 7. It used for displaying graphs rendered using a Javascript translation of the Graphviz package, [viz.js](https://github.com/mdaines/viz.js/). On the server side the graphs are represented by the com.vaadin.pontus.vizcomponent.model.Graph.Java class, which provides a hopefully convenient api to modify graphs. The viz.js library is then used in the web-browser to render this graph to an SVG element that is included in the component. The nodes and edges in the SVG are clickable and it is possible to register listeners for clicks server-side. It is also possible to style nodes and edges using CSS in response to clicks. Use of the features of the component is demonstrated in the included demos. The viz.js library is included in this package. The license for viz.js is provided in the viz.js.LICENCE.txt file. For panning an zooming an external library is used https://github.com/ariutta/svg-pan-zoom. It is included in this package. It is released under LGBL.
 
 
 ## Download release
@@ -53,10 +53,11 @@ Another way of debugging client-side is superdev mode. To enable it, uncomment d
 ### Version 0.0.1-SNAPSHOT
 - The Graph api on the server side supports a subset of the dot-language. Below is a more detailed list of limitations. 
 - Only polygon and ellipse node shapes and arrow head/arrow tails are supported
-- Subgraphs are not supported
+- Subgraphs are supported to some degree. However, edges to and from subgraph nodes might not give the expected results. It is better to use edges to and from nodes inside the subgraphs instead. 
 - Record-based nodes are not supported. However, one can use nodes with HTMl content instead. See the demos. 
 - Only the tooltip given by the node id is supported.
 - Images in nodes is not supported
+- Panning and zooming support is provided via external js-library https://github.com/ariutta/svg-pan-zoom
 
 ## Roadmap
 
