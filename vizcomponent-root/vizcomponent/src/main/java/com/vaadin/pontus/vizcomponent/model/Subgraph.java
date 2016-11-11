@@ -1,9 +1,9 @@
 package com.vaadin.pontus.vizcomponent.model;
 
 import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,8 +16,8 @@ import java.util.Set;
  * id:s</a>.
  *
  * Nodes and edges can have parameters that determines how they are displayed.
- * These parameters and values are the ones accepted in the <a
- * href="http://www.graphviz.org/doc/info/attrs.html">DOT language with some
+ * These parameters and values are the ones accepted in the
+ * <a href="http://www.graphviz.org/doc/info/attrs.html">DOT language with some
  * restrictions</a>.
  *
  * The graphs can also have parameters, they also need to be valid dot
@@ -120,11 +120,11 @@ public class Subgraph extends Parameterised {
      */
     public Subgraph() {
         super();
-        graph = new HashMap<Node, Set<AbstractMap.SimpleEntry<Node, Edge>>>();
+        graph = new LinkedHashMap<Node, Set<AbstractMap.SimpleEntry<Node, Edge>>>();
         nodeParams = new Parameterised();
         edgeParams = new Parameterised();
-        nodeMap = new HashMap<String, Node>();
-        edgeMap = new HashMap<String, Edge>();
+        nodeMap = new LinkedHashMap<String, Node>();
+        edgeMap = new LinkedHashMap<String, Edge>();
     }
 
     /**
@@ -135,7 +135,8 @@ public class Subgraph extends Parameterised {
      */
     public void addNode(Node node) {
         nodeMap.put(node.getId(), node);
-        graph.put(node, new HashSet<AbstractMap.SimpleEntry<Node, Edge>>());
+        graph.put(node,
+                new LinkedHashSet<AbstractMap.SimpleEntry<Node, Edge>>());
     }
 
     /**
@@ -152,12 +153,13 @@ public class Subgraph extends Parameterised {
                 dest, edge);
         if (!graph.containsKey(dest)) {
             nodeMap.put(dest.getId(), dest);
-            graph.put(dest, new HashSet<AbstractMap.SimpleEntry<Node, Edge>>());
+            graph.put(dest,
+                    new LinkedHashSet<AbstractMap.SimpleEntry<Node, Edge>>());
         }
         Set<AbstractMap.SimpleEntry<Node, Edge>> destSet = graph.get(source);
         if (destSet == null) {
             nodeMap.put(source.getId(), source);
-            destSet = new HashSet<AbstractMap.SimpleEntry<Node, Edge>>();
+            destSet = new LinkedHashSet<AbstractMap.SimpleEntry<Node, Edge>>();
             destSet.add(edgeDest);
             graph.put(source, destSet);
         } else {
@@ -213,7 +215,7 @@ public class Subgraph extends Parameterised {
      * @return an empty set if there are no edges
      */
     public Set<Edge> getEdges() {
-        Set<Edge> edges = new HashSet<Edge>();
+        Set<Edge> edges = new LinkedHashSet<Edge>();
         for (String id : edgeMap.keySet()) {
             edges.add(edgeMap.get(id));
         }
