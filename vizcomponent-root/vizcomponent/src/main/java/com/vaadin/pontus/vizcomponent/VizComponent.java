@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 import com.vaadin.pontus.vizcomponent.client.Edge;
@@ -193,11 +194,14 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
         getState().graph = null;
         getState().graph = new Node();
         getState().graph.id = escapeId(graph.getName());
-        drawGraph(getState().graph, graph);
+        Set<Edge> crossGraphEdges = new HashSet<Edge>();
+        drawGraph(getState().graph, graph, crossGraphEdges);
+        getState().graph.graph.addAll(crossGraphEdges);
 
     }
 
-    private void drawGraph(Node clientNode, Subgraph graph) {
+    private void drawGraph(Node clientNode, Subgraph graph,
+            Set<Edge> crossGraphEdges) {
 
         // Set the graph parameters
         HashMap<String, String> params = new HashMap<String, String>();
@@ -225,11 +229,13 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
         // Set the graph itself
         ArrayList<Edge> newGraph = new ArrayList<Edge>();
 
-        for (Subgraph.Node node : graph.getNodes()) {
+        Set<Graph.Node> graphNodes = graph.getNodes();
+        for (Subgraph.Node node : graphNodes) {
             Node newNode = new Node();
             if (node instanceof Subgraph.GraphNode) {
                 newNode.id = escapeId(node.getId());
-                drawGraph(newNode, ((Subgraph.GraphNode) node).getGraph());
+                drawGraph(newNode, ((Subgraph.GraphNode) node).getGraph(),
+                        crossGraphEdges);
                 // The parameters of the node are ignored
             } else {
                 newNode.id = escapeId(node.getId());
@@ -256,7 +262,8 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
                     if (dest instanceof Subgraph.GraphNode) {
                         destNode.id = escapeId(dest.getId());
                         drawGraph(destNode,
-                                ((Subgraph.GraphNode) dest).getGraph());
+                                ((Subgraph.GraphNode) dest).getGraph(),
+                                crossGraphEdges);
                         // The parameters of the node are ignored
                     } else {
                         destNode.id = escapeId(dest.getId());
@@ -267,7 +274,11 @@ public class VizComponent extends com.vaadin.ui.AbstractComponent {
                         }
                     }
                     newEdge.dest = destNode;
-                    newGraph.add(newEdge);
+                    if (graphNodes.contains(conn.getKey())) {
+                        newGraph.add(newEdge);
+                    } else {
+                        crossGraphEdges.add(newEdge);
+                    }
                 }
             }
 

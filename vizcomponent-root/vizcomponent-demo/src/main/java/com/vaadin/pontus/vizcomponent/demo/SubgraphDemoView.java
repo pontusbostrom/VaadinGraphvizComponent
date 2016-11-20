@@ -19,40 +19,42 @@ public class SubgraphDemoView extends VerticalLayout {
 
         Graph graph = new Graph("G", Graph.DIGRAPH);
 
+        Graph.Node node1 = new Graph.Node("k1");
+        Graph.Node node2 = new Graph.Node("k2");
+        graph.addNode(node1);
+        graph.addNode(node2);
+
         // Create one subgraph with two nodes
         Graph.Node node11 = new Graph.Node("n1");
         Graph.Node node12 = new Graph.Node("n2");
-        Subgraph sub = new Subgraph();
-        sub.setParam("style", "filled");
-        sub.setParam("color", "lightgrey");
-        sub.setParam("label", "\"sub #1\"");
-        sub.addEdge(node11, node12);
-        sub.addEdge(node12, node11);
+        Subgraph sub1 = graph.createNewSubgraph();
+        sub1.setParam("style", "filled");
+        sub1.setParam("color", "lightgrey");
+        sub1.setParam("label", "\"sub #1\"");
+        sub1.addEdge(node11, node12);
+        sub1.addEdge(node12, node11);
 
         // Note that the name "cluster_0" is significant here
-        GraphNode subNode = new GraphNode("cluster_0", sub);
+        GraphNode subNode = new GraphNode("cluster_0", sub1);
         graph.addNode(subNode);
 
         // Create another subgraph with
         Graph.Node node21 = new Graph.Node("m1");
         Graph.Node node22 = new Graph.Node("m2");
-        sub = new Subgraph();
-        sub.setParam("color", "red");
-        sub.setParam("label", "\"sub #2\"");
-        sub.addEdge(node21, node22);
-        sub.addEdge(node22, node21);
+        Subgraph sub2 = graph.createNewSubgraph();
+        sub2.setParam("color", "red");
+        sub2.setParam("label", "\"sub #2\"");
+        sub2.addEdge(node21, node22);
+        sub2.addEdge(node22, node21);
 
-        subNode = new GraphNode("cluster_1", sub);
+        subNode = new GraphNode("cluster_1", sub2);
         graph.addNode(subNode);
 
-        Graph.Node node1 = new Graph.Node("k1");
-        Graph.Node node2 = new Graph.Node("k2");
-
         graph.addEdge(node1, node11);
-        graph.addEdge(node12, node2);
+        sub1.addEdge(node12, node2);
 
         graph.addEdge(node1, node21);
-        graph.addEdge(node22, node2);
+        sub2.addEdge(node22, node2);
 
         component.setWidth("400px");
         component.setHeight("300px");

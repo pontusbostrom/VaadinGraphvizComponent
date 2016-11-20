@@ -16,8 +16,8 @@ import java.util.Set;
  * id:s</a>.
  *
  * Nodes and edges can have parameters that determines how they are displayed.
- * These parameters and values are the ones accepted in the
- * <a href="http://www.graphviz.org/doc/info/attrs.html">DOT language with some
+ * These parameters and values are the ones accepted in the <a
+ * href="http://www.graphviz.org/doc/info/attrs.html">DOT language with some
  * restrictions</a>.
  *
  * The graphs can also have parameters, they also need to be valid dot
@@ -40,6 +40,10 @@ public class Subgraph extends Parameterised {
         public Node(String id) {
             super(id);
         }
+
+        Subgraph getGraph() {
+            return null;
+        }
     }
 
     public static class GraphNode extends Node {
@@ -50,6 +54,7 @@ public class Subgraph extends Parameterised {
             this.subgraph = subgraph;
         }
 
+        @Override
         public Subgraph getGraph() {
             return subgraph;
         }
@@ -104,11 +109,17 @@ public class Subgraph extends Parameterised {
 
     }
 
+    public interface EdgeFactory {
+        public Edge newInstance();
+    }
+
+    private EdgeFactory edgeFactory;
     final private Map<Node, Set<AbstractMap.SimpleEntry<Node, Edge>>> graph;
     private Parameterised nodeParams;
     private Parameterised edgeParams;
     private Map<String, Node> nodeMap;
     private Map<String, Edge> edgeMap;
+    private Subgraph parent;
 
     /**
      * Constructs an empty graph with no nodes and no edges
@@ -118,13 +129,49 @@ public class Subgraph extends Parameterised {
      * @param type
      *            is either a digraph or graph
      */
-    public Subgraph() {
+    Subgraph(Subgraph parent) {
         super();
         graph = new LinkedHashMap<Node, Set<AbstractMap.SimpleEntry<Node, Edge>>>();
         nodeParams = new Parameterised();
         edgeParams = new Parameterised();
         nodeMap = new LinkedHashMap<String, Node>();
         edgeMap = new LinkedHashMap<String, Edge>();
+        edgeFactory = new EdgeFactory() {
+
+            @Override
+            public Edge newInstance() {
+                return new Edge();
+            }
+
+        };
+        this.parent = parent;
+    }
+
+    Subgraph() {
+        this(null);
+    }
+
+    /**
+     * Creates a new subgraph in the current subgraph. The same edgeFactory will
+     * be used in the new subgraph.
+     */
+    public Subgraph createNewSubgraph() {
+        Subgraph sub = new Subgraph(this);
+        sub.edgeFactory = edgeFactory;
+        return sub;
+    }
+
+    /**
+     * Allows to set a custom factory to create edges. This can be used to e.g.
+     * use sub classes of the edge class. By default the factory create objects
+     * of the {@link com.vaadin.pontus.vizcomponent.model.Subgraph.Edge Edge}
+     * class.
+     *
+     * @param edgeF
+     *            The custom factory.
+     */
+    public void setEdgeFactory(EdgeFactory edgeF) {
+        edgeFactory = edgeF;
     }
 
     /**
@@ -141,20 +188,28 @@ public class Subgraph extends Parameterised {
 
     /**
      * Adds an edge between the nodes. If the nodes are not in the graph
-     * already, they are added
+     * already, they are added. Note that the user must ensure that the source
+     * node is not in any other subgraph. The destination node can be in a
+     * subgraph of this graph or in the parent.
      *
      * @param source
      * @param dest
+     * @param factory
+     *            The factory used to create the edge
+     * @return The created edge
      */
-    public Edge addEdge(Node source, Node dest) {
-        Edge edge = new Edge();
+    public Edge addEdge(Node source, Node dest, EdgeFactory factory) {
+        Edge edge = factory.newInstance();
         edgeMap.put(edge.getId(), edge);
         AbstractMap.SimpleEntry<Node, Edge> edgeDest = new AbstractMap.SimpleEntry<Node, Edge>(
                 dest, edge);
         if (!graph.containsKey(dest)) {
-            nodeMap.put(dest.getId(), dest);
-            graph.put(dest,
-                    new LinkedHashSet<AbstractMap.SimpleEntry<Node, Edge>>());
+            if (!findRecursiveUpward(dest) && !findRecursiveDownward(dest)) {
+                nodeMap.put(dest.getId(), dest);
+                graph.put(
+                        dest,
+                        new LinkedHashSet<AbstractMap.SimpleEntry<Node, Edge>>());
+            }
         }
         Set<AbstractMap.SimpleEntry<Node, Edge>> destSet = graph.get(source);
         if (destSet == null) {
@@ -166,6 +221,47 @@ public class Subgraph extends Parameterised {
             destSet.add(edgeDest);
         }
         return edge;
+    }
+
+    private boolean findRecursiveDownward(Node node) {
+        for (Node n : graph.keySet()) {
+            Subgraph g = n.getGraph();
+            if (g != null) {
+                if (g.findRecursiveDownward(node)) {
+                    return true;
+                }
+            }
+            if (n.equals(node)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean findRecursiveUpward(Node dest) {
+        if (graph.containsKey(dest)) {
+            return true;
+        } else {
+            if (parent != null) {
+                return parent.findRecursiveUpward(dest);
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /**
+     * Adds an edge between the nodes. If the nodes are not in the graph
+     * already, they are added. The edge is created by the factory set in the
+     * graph. Note that the user must ensure that the source
+     * node is not in any other subgraph. The destination node can be in a
+     * subgraph of this graph or in the parent.
+     *
+     * @param source
+     * @param dest
+     */
+    public Edge addEdge(Node source, Node dest) {
+        return addEdge(source, dest, edgeFactory);
     }
 
     /**
