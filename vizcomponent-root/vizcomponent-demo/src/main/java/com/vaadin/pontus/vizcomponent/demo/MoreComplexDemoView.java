@@ -18,8 +18,8 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.Panel;
+import com.vaadin.ui.RadioButtonGroup;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
@@ -55,8 +55,9 @@ public class MoreComplexDemoView extends VerticalLayout {
         final TextField noEdgesBox = new TextField("Number of edges");
         final TextField directionBox = new TextField(
                 "Layout direction (TB, LR, BT, RL)");
-        final OptionGroup typeOption = new OptionGroup("Graph type");
-        typeOption.addItems("Directed", "Undirected");
+        final RadioButtonGroup<String> typeOption = new RadioButtonGroup<>(
+                "Graph type");
+        typeOption.setItems("Directed", "Undirected");
         typeOption.setValue("Directed");
         final Button drawButton = new Button("Draw graph");
         final TextField widthBox = new TextField("Graph width (px)");
@@ -75,7 +76,7 @@ public class MoreComplexDemoView extends VerticalLayout {
         paramLayout.addComponent(resizeButton);
         paramLayout.addComponent(size100Button);
         paramLayout.setSpacing(true);
-        paramLayout.setWidth(300,Unit.PIXELS);
+        paramLayout.setWidth(300, Unit.PIXELS);
 
         hLayout.addComponent(paramLayout);
         hLayout.addComponent(panel);
@@ -104,7 +105,7 @@ public class MoreComplexDemoView extends VerticalLayout {
                         && !"BT".equals(direction) && !"RL".equals(direction)) {
                     direction = "TB";
                 }
-                String typeStr = (String) typeOption.getValue();
+                String typeStr = typeOption.getValue();
                 String type = Graph.GRAPH;
                 if (typeStr.equals("Directed")) {
                     type = Graph.DIGRAPH;
@@ -119,8 +120,7 @@ public class MoreComplexDemoView extends VerticalLayout {
             }
 
         });
-        
-        
+
         resizeButton.addClickListener(new ClickListener() {
 
             @Override
@@ -144,7 +144,7 @@ public class MoreComplexDemoView extends VerticalLayout {
             }
 
         });
-        
+
         component.addClickListener(new NodeClickListener() {
 
             @Override
@@ -168,11 +168,12 @@ public class MoreComplexDemoView extends VerticalLayout {
 
     public void createAndRenderGraph(int noEdges, String direction,
             String type, int width, int height) {
-    	
-    	ZoomSettings zs = new ZoomSettings();
-    	zs.setControlIconsEnabled(true); // TODO: make UI in DEMO for zoom & pan settings
-    	zs.setPreventMouseEventsDefault(true);
-    	component.setPanZoomSettings(zs);
+
+        ZoomSettings zs = new ZoomSettings();
+        zs.setControlIconsEnabled(true); // TODO: make UI in DEMO for zoom & pan
+                                         // settings
+        zs.setPreventMouseEventsDefault(true);
+        component.setPanZoomSettings(zs);
         component.setWidth(width + "px");
         component.setHeight(height + "px");
         Graph graph = new Graph("G", type);

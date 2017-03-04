@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.vaadin.data.util.BeanItemContainer;
-import com.vaadin.event.SelectionEvent;
-import com.vaadin.event.SelectionEvent.SelectionListener;
+import com.vaadin.data.provider.ListDataProvider;
+import com.vaadin.event.selection.SelectionEvent;
+import com.vaadin.event.selection.SelectionListener;
 import com.vaadin.pontus.vizcomponent.VizComponent;
 import com.vaadin.pontus.vizcomponent.VizComponent.NodeClickEvent;
 import com.vaadin.pontus.vizcomponent.VizComponent.NodeClickListener;
@@ -94,7 +94,7 @@ public class InteractiveDemoView extends HorizontalSplitPanel {
 
     private VizComponent graphComponent;
     Graph graph;
-    Grid grid;
+    Grid<NodeInfo> grid;
     private Label infoLabel;
 
     String lastSelected = null;
@@ -110,18 +110,19 @@ public class InteractiveDemoView extends HorizontalSplitPanel {
     }
 
     private Component createNodeListPanel() {
-        grid = new Grid();
+        grid = new Grid<NodeInfo>();
         grid.setSizeFull();
-        BeanItemContainer<NodeInfo> container = new BeanItemContainer<NodeInfo>(
-                NodeInfo.class, Arrays.asList(nodes));
-        grid.setContainerDataSource(container);
+        grid.addColumn(NodeInfo::getCaption).setCaption("Caption");
+        grid.addColumn(NodeInfo::getInfo).setCaption("Info");
+        ListDataProvider<NodeInfo> container = new ListDataProvider<NodeInfo>(
+                Arrays.asList(nodes));
+        grid.setDataProvider(container);
 
-        grid.addSelectionListener(new SelectionListener() {
+        grid.addSelectionListener(new SelectionListener<NodeInfo>() {
 
             @Override
-            public void select(SelectionEvent event) {
-
-                Set<Object> selected = event.getSelected();
+            public void selectionChange(SelectionEvent<NodeInfo> event) {
+                Set<NodeInfo> selected = event.getAllSelectedItems();
                 if (selected.size() > 0) {
                     Object obj = selected.iterator().next(); // Quick and Dirty
                                                              // for Sample, just
@@ -142,6 +143,7 @@ public class InteractiveDemoView extends HorizontalSplitPanel {
                     }
                     selectSource = null;
                 }
+
             }
         });
         return grid;

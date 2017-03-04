@@ -7,7 +7,7 @@
     -->
 
     <!-- Inherit add-on widgetset -->
-    <inherits name="com.vaadin.pontus.vizcomponent.WidgetSet" />
+    
 
     <!--
      Uncomment the following to compile the widgetset for one browser only.
@@ -31,4 +31,8 @@
 
 
     <inherits name="com.vaadin.DefaultWidgetSet" />
+
+    
+
+    <inherits name="com.vaadin.pontus.vizcomponent.WidgetSet" />
 </module>

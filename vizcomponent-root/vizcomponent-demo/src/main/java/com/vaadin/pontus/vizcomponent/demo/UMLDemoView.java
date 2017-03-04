@@ -7,7 +7,7 @@ import com.vaadin.pontus.vizcomponent.VizComponent;
 import com.vaadin.pontus.vizcomponent.VizComponent.NodeClickEvent;
 import com.vaadin.pontus.vizcomponent.VizComponent.NodeClickListener;
 import com.vaadin.pontus.vizcomponent.model.Graph;
-import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
