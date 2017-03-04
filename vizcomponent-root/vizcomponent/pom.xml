@@ -5,7 +5,7 @@
 	<groupId>com.vaadin.pontus</groupId>
 	<artifactId>vizcomponent</artifactId>
 	<packaging>jar</packaging>
-	<version>0.3</version>
+	<version>1.0</version>
 	<name>VizComponent Add-on</name>
 
 	<properties>
