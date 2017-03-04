@@ -70,7 +70,7 @@ public class VizComponentWidget extends FlowPanel {
             getElement().removeChild(svg);
             svg = null;
         }
-        if (graph.graph == null) {
+        if (graph == null || graph.graph == null) {
             return;
         }
         if (graph.graph.isEmpty()) {
