@@ -12,6 +12,7 @@ import com.vaadin.ui.VerticalLayout;
 @SuppressWarnings("serial")
 public class SimpleDemoView extends VerticalLayout {
 
+	private boolean blue = false;
     public SimpleDemoView() {
 
         final VizComponent component = new VizComponent();
@@ -47,8 +48,14 @@ public class SimpleDemoView extends VerticalLayout {
             @Override
             public void nodeClicked(NodeClickEvent e) {
                 Graph.Node node = e.getNode();
-                component.addCss(node, "stroke", "blue");
-                component.addTextCss(node, "fill", "blue");
+                if(blue) {
+                	component.addCss(node, "stroke", null);
+                	component.addTextCss(node, "fill", null);
+                } else{
+                	component.addCss(node, "stroke", "blue");
+                	component.addTextCss(node, "fill", "blue");
+                }
+                blue = !blue;
             }
 
         });
