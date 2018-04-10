@@ -248,7 +248,28 @@ public class GraphTest {
         assertTrue(graph.getNodes().contains(node1));
 
     }
+   
+    @Test
+    public void testGetSourceByEdge() {
+    	 Graph graph = new Graph("test", Graph.DIGRAPH);
+         Graph.Node node1 = new Graph.Node("1");
+         Graph.Node node2 = new Graph.Node("2");
+         Edge edge = graph.addEdge(node1, node2);
+         
+         assertEquals(node1,graph.getSource(edge));
+    }
+    
+    @Test
+    public void testGetDestByEdge() {
+   	 Graph graph = new Graph("test", Graph.DIGRAPH);
+        Graph.Node node1 = new Graph.Node("1");
+        Graph.Node node2 = new Graph.Node("2");
 
+        Edge edge = graph.addEdge(node1, node2);
+        
+        assertEquals(node2,graph.getDest(edge));
+   }
+    
     static public class CustomEdge extends Graph.Edge {
 
     }
