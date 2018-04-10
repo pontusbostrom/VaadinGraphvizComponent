@@ -1,10 +1,12 @@
 package com.vaadin.pontus.vizcomponent.model;
 
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -93,18 +95,9 @@ public class Subgraph extends Parameterised {
      */
     public static class Edge extends GraphElement {
         private static volatile long counter = 0L;
-        private Node dest;
 
         public Edge() {
             super("edge" + counter++);
-        }
-
-        public Node getDest() {
-            return dest;
-        }
-
-        public void setDest(Node dest) {
-            this.dest = dest;
         }
 
     }
@@ -396,6 +389,28 @@ public class Subgraph extends Parameterised {
      */
     public Set<String> getEdgeParams() {
         return edgeParams.getParams();
+    }
+    
+    public Node getSource(Edge edge) {
+    	for(Entry<Node,Set<SimpleEntry<Node,Edge>>> gentry: graph.entrySet()) {
+    		for(SimpleEntry<Node,Edge> dentry: gentry.getValue()) {
+    			if(edge!=null && edge.equals(dentry.getValue())) {
+    				return gentry.getKey();
+    			}
+    		}
+    	}
+    	return null;
+    }
+    
+    public Node getDest(Edge edge) {
+    	for(Entry<Node,Set<SimpleEntry<Node,Edge>>> gentry: graph.entrySet()) {
+    		for(SimpleEntry<Node,Edge> dentry: gentry.getValue()) {
+    			if(edge!=null && edge.equals(dentry.getValue())) {
+    				return dentry.getKey();
+    			}
+    		}
+    	}
+    	return null;
     }
 
     /**
